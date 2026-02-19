@@ -1,6 +1,7 @@
 using BookShop.Application.Order.Contracts;
 using BookShop.Application.Order.Contracts.Request;
 using BookShop.Application.Order.Contracts.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.API.Controllers;
@@ -19,6 +20,7 @@ public sealed class OrdersController : ControllerBase
     public async Task<ActionResult<OrderResponse>> GetById(int id, CancellationToken ct) => Ok(await _orderService.GetByIdAsync(id, ct));
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<int>> Create([FromBody] CreateOrderRequest request, CancellationToken ct)
     {
         var id = await _orderService.CreateAsync(request, ct);
@@ -26,18 +28,23 @@ public sealed class OrdersController : ControllerBase
     }
 
     [HttpPatch("{id:int}/paid")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> MarkAsPaid(int id, CancellationToken ct) { await _orderService.MarkAsPaidAsync(id, ct); return NoContent(); }
 
     [HttpPatch("{id:int}/shipped")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> MarkAsShipped(int id, CancellationToken ct) { await _orderService.MarkAsShippedAsync(id, ct); return NoContent(); }
 
     [HttpPatch("{id:int}/delivered")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> MarkAsDelivered(int id, CancellationToken ct) { await _orderService.MarkAsDeliveredAsync(id, ct); return NoContent(); }
 
     [HttpPatch("{id:int}/cancel")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Cancel(int id, CancellationToken ct) { await _orderService.CancelAsync(id, ct); return NoContent(); }
 
     [HttpPatch("{id:int}/item-quantity")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ChangeItemQuantity(int id, [FromBody] ChangeOrderItemQuantityRequest request, CancellationToken ct)
     {
         await _orderService.ChangeItemQuantityAsync(id, request, ct);
@@ -45,6 +52,7 @@ public sealed class OrdersController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         await _orderService.DeleteAsync(id, ct);
