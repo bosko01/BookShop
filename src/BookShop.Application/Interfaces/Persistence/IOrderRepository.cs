@@ -9,7 +9,7 @@ namespace BookShop.Application.Interfaces.Persistence
 {
     public interface IOrderRepository : IRepository<OrderEntity, int>
     {
-        Task<Order?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default);
+        Task<OrderEntity?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default);
 
     }
 }
