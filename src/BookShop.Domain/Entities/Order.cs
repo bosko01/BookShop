@@ -83,4 +83,12 @@ public class Order
 
         Status = OrderStatus.Delivered;
     }
+    public void ChangeItemQuantity(int orderItemId, int quantity)
+    {
+        var item = Items.FirstOrDefault(i => i.Id == orderItemId)
+            ?? throw new InvalidOperationException("Order item not found.");
+
+        item.ChangeQuantity(quantity);
+        RecalculateTotal();
+    }
 }

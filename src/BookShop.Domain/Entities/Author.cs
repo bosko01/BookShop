@@ -73,4 +73,6 @@ public class Author
 
 		Biography = biography;
 	}
+
+    public string GetFullName() => $"{FirstName} {LastName}";
 }

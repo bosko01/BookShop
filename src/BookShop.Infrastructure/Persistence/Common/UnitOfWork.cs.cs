@@ -1,9 +1,9 @@
-﻿using BookShop.Application.Interfaces.Persistence;
+﻿using BookShop.Application.Interfaces.Persistence.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookShop.Infrastructure.Persistence
+namespace BookShop.Infrastructure.Persistence.Common
 {
     public sealed class UnitOfWork : IUnitOfWork
     {

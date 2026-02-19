@@ -20,7 +20,7 @@ public class Book : SoftDeleteBaseEntity
         string? description,
         string? imageUrl)
     {
-           Title = title;
+        Title = title;
         Price = price;
         QuantityInStock = quantityInStock;
         PageCount = pageCount;
@@ -53,12 +53,13 @@ public class Book : SoftDeleteBaseEntity
     public int GenreId { get; private set; }
     public int BindingId { get; private set; }
 
-    // Navigation (EF set)
+    // Navigation (EF Core)
     public Publisher Publisher { get; private set; } = default!;
     public Author Author { get; private set; } = default!;
     public Genre Genre { get; private set; } = default!;
     public Binding Binding { get; private set; } = default!;
     public ICollection<Review> Reviews { get; private set; } = new List<Review>();
+
 
     public static Book Create(
         string title,
@@ -82,12 +83,19 @@ public class Book : SoftDeleteBaseEntity
             throw new ArgumentOutOfRangeException(nameof(quantityInStock), "Stock cannot be negative.");
 
         if (pageCount < 0)
-            throw new ArgumentOutOfRangeException(nameof(pageCount), "PageCount cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(pageCount), "Page count cannot be negative.");
 
-        if (publisherId <= 0) throw new ArgumentOutOfRangeException(nameof(publisherId));
-        if (authorId <= 0) throw new ArgumentOutOfRangeException(nameof(authorId));
-        if (genreId <= 0) throw new ArgumentOutOfRangeException(nameof(genreId));
-        if (bindingId <= 0) throw new ArgumentOutOfRangeException(nameof(bindingId));
+        if (publisherId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(publisherId));
+
+        if (authorId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(authorId));
+
+        if (genreId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(genreId));
+
+        if (bindingId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(bindingId));
 
         return new Book(
             title.Trim(),
@@ -106,19 +114,31 @@ public class Book : SoftDeleteBaseEntity
     {
         if (string.IsNullOrWhiteSpace(newTitle))
             throw new ArgumentException("Title cannot be empty.", nameof(newTitle));
+
         Title = newTitle.Trim();
     }
-    public void changePrice(decimal newPrice)
+
+    public void ChangePrice(decimal newPrice)
     {
         if (newPrice <= 0)
             throw new ArgumentOutOfRangeException(nameof(newPrice), "Price must be greater than zero.");
+
         Price = newPrice;
+    }
+
+    public void ChangePageCount(int pageCount)
+    {
+        if (pageCount < 0)
+            throw new ArgumentOutOfRangeException(nameof(pageCount), "Page count cannot be negative.");
+
+        PageCount = pageCount;
     }
 
     public void SetQuantityInStock(int newQuantity)
     {
         if (newQuantity < 0)
             throw new ArgumentOutOfRangeException(nameof(newQuantity), "Stock cannot be negative.");
+
         QuantityInStock = newQuantity;
     }
 
@@ -126,24 +146,68 @@ public class Book : SoftDeleteBaseEntity
     {
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+
         if (amount > QuantityInStock)
             throw new InvalidOperationException("Not enough stock to decrement.");
+
         QuantityInStock -= amount;
     }
 
-    public void updateDescription(string? newDescription)
+    public void ChangePublisher(int publisherId)
+    {
+        if (publisherId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(publisherId));
+
+        PublisherId = publisherId;
+    }
+
+    public void ChangeAuthor(int authorId)
+    {
+        if (authorId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(authorId));
+
+        AuthorId = authorId;
+    }
+
+    public void ChangeGenre(int genreId)
+    {
+        if (genreId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(genreId));
+
+        GenreId = genreId;
+    }
+
+    public void ChangeBinding(int bindingId)
+    {
+        if (bindingId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(bindingId));
+
+        BindingId = bindingId;
+    }
+
+    public void UpdateDescription(string? newDescription)
     {
         Description = newDescription;
     }
 
-    public void updateImageUrl(string? newImageUrl)
+    public void UpdateImageUrl(string? newImageUrl)
     {
         ImageUrl = newImageUrl;
     }
 
-    public void markAsDeleted()
+    public void MarkAsDeleted()
     {
         IsDeleted = true;
         DeletedAtUtc = DateTime.UtcNow;
     }
+
+    public void Restore()
+    {
+        if (!IsDeleted)
+            throw new InvalidOperationException("Book is not deleted.");
+
+        IsDeleted = false;
+        DeletedAtUtc = null;
+    }
+
 }

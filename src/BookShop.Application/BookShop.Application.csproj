@@ -5,11 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Book\Services\" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    <Folder Include="Author\Validation\" />
   </ItemGroup>
 
   <PropertyGroup>

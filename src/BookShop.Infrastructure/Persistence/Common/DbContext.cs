@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 
-namespace BookShop.Infrastructure.Persistence;
+namespace BookShop.Infrastructure.Persistence.Common;
 
 public sealed class BookShopDbContext : DbContext
 {
