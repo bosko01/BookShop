@@ -82,6 +82,22 @@ public class User
         PasswordHash = newPasswordHash;
     }
 
+    public void UpdateProfile(string firstName, string lastName, string email)
+    {
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("First name is required.", nameof(firstName));
+
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Last name is required.", nameof(lastName));
+
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email is required.", nameof(email));
+
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        Email = email.Trim();
+    }
+
     public void SetRole(UserRole role)
     {
         Role = role;

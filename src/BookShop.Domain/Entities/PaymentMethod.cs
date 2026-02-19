@@ -40,6 +40,14 @@ public class PaymentMethod
         Name = name.Trim();
     }
 
+    public void UpdateDescription(string? description)
+    {
+        if (description is not null && description.Length > 250)
+            throw new ArgumentException("Description is too long.", nameof(description));
+
+        Description = description;
+    }
+
     public void Activate() => IsActive = true;
 
     public void Deactivate() => IsActive = false;
