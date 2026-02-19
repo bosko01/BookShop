@@ -1,29 +1,39 @@
 using BookShop.API.ErrorHandling;
+using BookShop.Application.Author.Contracts;
 using BookShop.Application.Author.Services;
+using BookShop.Application.Binding.Contracts;
+using BookShop.Application.Binding.Services;
 using BookShop.Application.Book.Contracts;
 using BookShop.Application.Book.Services;
 using BookShop.Application.Book.Validation;
+using BookShop.Application.Genre.Contracts;
+using BookShop.Application.Genre.Services;
 using BookShop.Application.Interfaces.Persistence;
 using BookShop.Application.Interfaces.Persistence.Common;
+using BookShop.Application.Invoice.Contracts;
+using BookShop.Application.Invoice.Services;
+using BookShop.Application.Order.Contracts;
+using BookShop.Application.Order.Services;
+using BookShop.Application.PaymentMethod.Contracts;
+using BookShop.Application.PaymentMethod.Services;
+using BookShop.Application.Publisher.Contracts;
+using BookShop.Application.Publisher.Services;
+using BookShop.Application.Review.Contracts;
+using BookShop.Application.Review.Services;
+using BookShop.Application.User.Contracts;
+using BookShop.Application.User.Services;
 using BookShop.Infrastructure.Persistence;
 using BookShop.Infrastructure.Persistence.Common;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
-// Ensure Swagger generator is registered so app.UseSwagger() / UseSwaggerUI() are available.
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<BookShopDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddProblemDetails();
@@ -31,24 +41,38 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IPublisherRepository, PublisherRepository>();
+builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+builder.Services.AddScoped<IBindingRepository, BindingRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<IBindingService, BindingService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateBookRequestValidator>();
 
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
     app.MapOpenApi();
 }
+
 app.MapControllers();
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.Run();
-
