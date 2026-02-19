@@ -4,6 +4,7 @@ using BookShop.Application.Interfaces.Persistence.Common;
 using BookShop.Application.User.Contracts;
 using BookShop.Application.User.Contracts.Request;
 using BookShop.Application.User.Contracts.Response;
+using BookShop.Application.User.Security;
 
 namespace BookShop.Application.User.Services;
 
@@ -11,11 +12,13 @@ public sealed class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UserService(IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public UserService(IUserRepository userRepository, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<IReadOnlyList<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -38,7 +41,8 @@ public sealed class UserService : IUserService
         if (await _userRepository.ExistsByEmailAsync(request.Email, cancellationToken))
             throw new ConflictException("User with this email already exists.");
 
-        var user = Domain.Entities.User.Create(request.FirstName, request.LastName, request.Email, request.PasswordHash, request.Role);
+        var passwordHash = _passwordHasher.HashPassword(request.Password);
+        var user = Domain.Entities.User.Create(request.FirstName, request.LastName, request.Email, passwordHash, request.Role);
         await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
         return user.Id;
@@ -68,7 +72,8 @@ public sealed class UserService : IUserService
     public async Task ChangePasswordAsync(int id, ChangeUserPasswordRequest request, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User", id);
-        user.ChangePassword(request.PasswordHash);
+        var passwordHash = _passwordHasher.HashPassword(request.Password);
+        user.ChangePassword(passwordHash);
         await _unitOfWork.SaveAsync(cancellationToken);
     }
 

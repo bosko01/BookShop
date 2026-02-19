@@ -1,6 +1,7 @@
 ﻿using BookShop.Application.Book.Contracts;
 using BookShop.Application.Book.Contracts.Request;
 using BookShop.Application.Book.Contracts.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.API.Controllers;
@@ -92,6 +93,7 @@ public sealed class BookController : ControllerBase
     // =========================
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<int>> Create(
         [FromBody] CreateBookRequest request,
         CancellationToken cancellationToken)
@@ -109,6 +111,7 @@ public sealed class BookController : ControllerBase
     // =========================
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<BookResponse>> Update(
         int id,
         [FromBody] UpdateBookRequest request,
@@ -123,6 +126,7 @@ public sealed class BookController : ControllerBase
     // =========================
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         await _bookService.DeleteAsync(id, cancellationToken);
@@ -134,6 +138,7 @@ public sealed class BookController : ControllerBase
     // =========================
 
     [HttpPatch("{id:int}/restore")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
     {
         await _bookService.RestoreAsync(id, cancellationToken);
@@ -145,6 +150,7 @@ public sealed class BookController : ControllerBase
     // =========================
 
     [HttpPatch("{id:int}/decrement-stock")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DecrementStock(
         int id,
         [FromQuery] int amount,

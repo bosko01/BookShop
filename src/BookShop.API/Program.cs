@@ -1,4 +1,6 @@
+using System.Text;
 using BookShop.API.ErrorHandling;
+using BookShop.API.Security;
 using BookShop.Application.Author.Contracts;
 using BookShop.Application.Author.Services;
 using BookShop.Application.Binding.Contracts;
@@ -21,11 +23,14 @@ using BookShop.Application.Publisher.Services;
 using BookShop.Application.Review.Contracts;
 using BookShop.Application.Review.Services;
 using BookShop.Application.User.Contracts;
+using BookShop.Application.User.Security;
 using BookShop.Application.User.Services;
 using BookShop.Infrastructure.Persistence;
 using BookShop.Infrastructure.Persistence.Common;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +66,34 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
 
+builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddSingleton<IRefreshTokenStore, InMemoryRefreshTokenStore>();
+
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+var key = jwtSettings["Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = signingKey,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddValidatorsFromAssemblyContaining<CreateBookRequestValidator>();
 
 var app = builder.Build();
@@ -72,7 +105,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapControllers();
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 app.Run();

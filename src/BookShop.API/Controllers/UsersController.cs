@@ -1,18 +1,21 @@
 using BookShop.Application.User.Contracts;
 using BookShop.Application.User.Contracts.Request;
 using BookShop.Application.User.Contracts.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public sealed class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
     public UsersController(IUserService userService) => _userService = userService;
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IReadOnlyList<UserResponse>>> GetAll(CancellationToken ct) => Ok(await _userService.GetAllAsync(ct));
 
     [HttpGet("{id:int}")]
@@ -22,6 +25,7 @@ public sealed class UsersController : ControllerBase
     public async Task<ActionResult<UserResponse>> GetByEmail([FromQuery] string email, CancellationToken ct) => Ok(await _userService.GetByEmailAsync(email, ct));
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<ActionResult<int>> Create([FromBody] CreateUserRequest request, CancellationToken ct)
     {
         var id = await _userService.CreateAsync(request, ct);
@@ -40,6 +44,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPatch("{id:int}/role")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SetRole(int id, [FromBody] SetUserRoleRequest request, CancellationToken ct)
     {
         await _userService.SetRoleAsync(id, request, ct);
@@ -47,6 +52,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         await _userService.DeleteAsync(id, ct);
