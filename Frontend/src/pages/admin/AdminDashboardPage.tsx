@@ -1,9 +1,16 @@
+import { useEffect, useState } from 'react';
 import { DataTable } from '../../components/admin/DataTable';
 import { StatCards } from '../../components/admin/StatCards';
 import { getAdminOrders } from '../../services/adminService';
+import { Order } from '../../types/order';
 
 const AdminDashboardPage = () => {
-  const recent = getAdminOrders().slice(0, 4);
+  const [recent, setRecent] = useState<Order[]>([]);
+
+  useEffect(() => {
+    getAdminOrders().then((orders) => setRecent(orders.slice(0, 4))).catch(() => setRecent([]));
+  }, []);
+
   return (
     <div className="space-y-6">
       <StatCards />

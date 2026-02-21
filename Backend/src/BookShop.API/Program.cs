@@ -99,6 +99,13 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateBookRequestValidator>();
 
@@ -112,6 +119,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("Frontend");
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { BookDetails } from '../components/book/BookDetails';
 import { RelatedBooks } from '../components/book/RelatedBooks';
@@ -8,12 +8,18 @@ import { useCart } from '../state/cart/CartContext';
 
 const BookDetailsPage = () => {
   const { id = '' } = useParams();
-  const book = getBookById(id);
+  const [book, setBook] = useState<Awaited<ReturnType<typeof getBookById>>>();
+  const [books, setBooks] = useState<Awaited<ReturnType<typeof getBooks>>>([]);
   const [quantity, setQuantity] = useState(1);
   const [tab, setTab] = useState<'details' | 'reviews'>('details');
   const { addToCart } = useCart();
 
-  const related = useMemo(() => getBooks().filter((item) => item.category === book?.category && item.id !== book?.id).slice(0, 4), [book]);
+  useEffect(() => {
+    getBookById(id).then(setBook).catch(() => setBook(undefined));
+    getBooks().then(setBooks).catch(() => setBooks([]));
+  }, [id]);
+
+  const related = useMemo(() => books.filter((item) => item.category === book?.category && item.id !== book?.id).slice(0, 4), [book, books]);
 
   if (!book) return <p className="rounded-2xl bg-white p-6 shadow-md">Book not found.</p>;
 
