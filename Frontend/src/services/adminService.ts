@@ -1,59 +1,108 @@
 import { Book } from '../types/book';
 import { Order, OrderStatus } from '../types/order';
-import { getBooks } from './bookService';
+import { request } from './apiClient';
+import { getBookById } from './bookService';
 
-let adminBooks: Book[] = getBooks();
+interface ApiOrder {
+  id: number;
+  userId: number;
+  totalAmount: number;
+  status: OrderStatus;
+  createdAtUtc: string;
+  itemCount: number;
+}
 
-let adminOrders: Order[] = [
-  { id: 'ORD-1001', customer: 'Ava Wilson', date: '2026-01-11', total: 54.5, items: 3, status: 'Created' },
-  { id: 'ORD-1002', customer: 'Noah Garcia', date: '2026-01-13', total: 120.0, items: 5, status: 'Paid' },
-  { id: 'ORD-1003', customer: 'Liam Brown', date: '2026-01-15', total: 33.99, items: 2, status: 'Shipped' },
-  { id: 'ORD-1004', customer: 'Emma Johnson', date: '2026-01-16', total: 89.45, items: 4, status: 'Cancelled' },
-];
+interface ApiBookListResponse {
+  id: number;
+}
 
-export const getAdminBooks = (): Book[] => [...adminBooks];
+const toOrder = (order: ApiOrder): Order => ({
+  id: `ORD-${order.id}`,
+  customer: `User #${order.userId}`,
+  date: new Date(order.createdAtUtc).toISOString().slice(0, 10),
+  total: order.totalAmount,
+  items: order.itemCount,
+  status: order.status,
+});
 
-export const createAdminBook = (book: Omit<Book, 'id' | 'rating' | 'reviewsCount' | 'description' | 'shortDescription' | 'year' | 'image'>): Book => {
-  const newBook: Book = {
-    ...book,
-    id: String(Date.now()),
-    rating: 4.2,
-    reviewsCount: 0,
-    description: `${book.title} by ${book.author}.`,
-    shortDescription: `${book.title} by ${book.author}.`,
-    year: new Date().getFullYear(),
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=New+Book',
+export const getAdminBooks = async (): Promise<Book[]> => {
+  const books = await request<ApiBookListResponse[]>('/api/book');
+  const details = await Promise.all(books.map((book) => getBookById(String(book.id))));
+  return details.filter((book): book is Book => Boolean(book));
+};
+
+export const createAdminBook = async (
+  token: string,
+  book: Omit<Book, 'id' | 'rating' | 'reviewsCount' | 'description' | 'shortDescription' | 'year' | 'image'>,
+): Promise<void> => {
+  await request<number>('/api/book', {
+    method: 'POST',
+    token,
+    body: {
+      title: book.title,
+      description: `${book.title} by ${book.author}`,
+      imageUrl: null,
+      pageCount: 100,
+      price: book.price,
+      quantityInStock: book.stock,
+      authorId: 1,
+      publisherId: 1,
+      genreId: 1,
+      bindingId: 1,
+    },
+  });
+};
+
+export const updateAdminBook = async (token: string, id: string, payload: Partial<Book>): Promise<void> => {
+  const existing = await getBookById(id);
+  if (!existing) return;
+
+  await request(`/api/book/${id}`, {
+    method: 'PUT',
+    token,
+    body: {
+      title: payload.title ?? existing.title,
+      price: payload.price ?? existing.price,
+      quantityInStock: payload.stock ?? existing.stock,
+      pageCount: existing.year,
+      publisherId: 1,
+      authorId: 1,
+      genreId: 1,
+      bindingId: 1,
+      description: payload.description ?? existing.description,
+      imageUrl: payload.image ?? existing.image,
+    },
+  });
+};
+
+export const deleteAdminBook = async (token: string, id: string): Promise<void> => {
+  await request(`/api/book/${id}`, {
+    method: 'DELETE',
+    token,
+  });
+};
+
+export const getAdminOrders = async (): Promise<Order[]> => {
+  const orders = await request<ApiOrder[]>('/api/orders');
+  return orders.map(toOrder);
+};
+
+export const updateOrderStatus = async (token: string, id: string, status: OrderStatus): Promise<void> => {
+  const numericId = Number(id.replace('ORD-', ''));
+  const endpointByStatus: Partial<Record<OrderStatus, string>> = {
+    Paid: 'paid',
+    Shipped: 'shipped',
+    Delivered: 'delivered',
+    Cancelled: 'cancel',
   };
-  adminBooks = [newBook, ...adminBooks];
-  return newBook;
-};
 
-export const updateAdminBook = (id: string, payload: Partial<Book>): Book | undefined => {
-  let updated: Book | undefined;
-  adminBooks = adminBooks.map((book) => {
-    if (book.id === id) {
-      updated = { ...book, ...payload };
-      return updated;
-    }
-    return book;
+  const endpoint = endpointByStatus[status];
+  if (!endpoint) {
+    return;
+  }
+
+  await request(`/api/orders/${numericId}/${endpoint}`, {
+    method: 'PATCH',
+    token,
   });
-  return updated;
-};
-
-export const deleteAdminBook = (id: string): void => {
-  adminBooks = adminBooks.filter((book) => book.id !== id);
-};
-
-export const getAdminOrders = (): Order[] => [...adminOrders];
-
-export const updateOrderStatus = (id: string, status: OrderStatus): Order | undefined => {
-  let updated: Order | undefined;
-  adminOrders = adminOrders.map((order) => {
-    if (order.id === id) {
-      updated = { ...order, status };
-      return updated;
-    }
-    return order;
-  });
-  return updated;
 };

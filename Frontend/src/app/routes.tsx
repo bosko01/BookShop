@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { ReactNode } from 'react';
 import { AdminLayout } from './layouts/AdminLayout';
 import { PublicLayout } from './layouts/PublicLayout';
 import HomePage from '../pages/HomePage';
@@ -9,6 +10,16 @@ import LoginPage from '../pages/LoginPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminBooksPage from '../pages/admin/AdminBooksPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
+import { useAuth } from '../state/auth/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+const RequireAdmin = ({ children }: { children: ReactNode }) => {
+  const { isAdmin } = useAuth();
+  if (!isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 export const router = createBrowserRouter([
   {
@@ -24,7 +35,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: <RequireAdmin><AdminLayout /></RequireAdmin>,
     children: [
       { index: true, element: <AdminDashboardPage /> },
       { path: 'books', element: <AdminBooksPage /> },

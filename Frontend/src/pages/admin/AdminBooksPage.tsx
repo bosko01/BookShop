@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BookFormModal } from '../../components/admin/BookFormModal';
 import { DataTable } from '../../components/admin/DataTable';
 import { createAdminBook, deleteAdminBook, getAdminBooks, updateAdminBook } from '../../services/adminService';
+import { useAuth } from '../../state/auth/AuthContext';
 import { Book } from '../../types/book';
 
 const AdminBooksPage = () => {
-  const [books, setBooks] = useState(getAdminBooks());
+  const { accessToken } = useAuth();
+  const [books, setBooks] = useState<Book[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Book | null>(null);
+
+  const loadBooks = async () => {
+    const result = await getAdminBooks();
+    setBooks(result);
+  };
+
+  useEffect(() => {
+    loadBooks().catch(() => setBooks([]));
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -27,7 +38,7 @@ const AdminBooksPage = () => {
             <td className="px-4 py-3">
               <div className="flex gap-2">
                 <button onClick={() => { setEditing(book); setOpen(true); }} className="rounded-lg bg-slate-100 px-3 py-1 text-xs">Edit</button>
-                <button onClick={() => { deleteAdminBook(book.id); setBooks(getAdminBooks()); }} className="rounded-lg bg-red-50 px-3 py-1 text-xs text-red-600">Delete</button>
+                <button onClick={async () => { if (accessToken) { await deleteAdminBook(accessToken, book.id); await loadBooks(); } }} className="rounded-lg bg-red-50 px-3 py-1 text-xs text-red-600">Delete</button>
               </div>
             </td>
           </tr>
@@ -37,13 +48,14 @@ const AdminBooksPage = () => {
         open={open}
         onClose={() => setOpen(false)}
         initial={editing}
-        onSubmit={(values) => {
+        onSubmit={async (values) => {
+          if (!accessToken) return;
           if (editing) {
-            updateAdminBook(editing.id, values);
+            await updateAdminBook(accessToken, editing.id, values);
           } else {
-            createAdminBook(values);
+            await createAdminBook(accessToken, values);
           }
-          setBooks(getAdminBooks());
+          await loadBooks();
         }}
       />
     </div>

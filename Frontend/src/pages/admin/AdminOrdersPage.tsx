@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataTable } from '../../components/admin/DataTable';
 import { getAdminOrders, updateOrderStatus } from '../../services/adminService';
+import { useAuth } from '../../state/auth/AuthContext';
+import { Order } from '../../types/order';
 import { OrderStatus } from '../../types/order';
 
-const statuses: OrderStatus[] = ['Created', 'Paid', 'Shipped', 'Cancelled'];
+const statuses: OrderStatus[] = ['Created', 'Paid', 'Shipped', 'Delivered', 'Cancelled'];
 
 const AdminOrdersPage = () => {
-  const [orders, setOrders] = useState(getAdminOrders());
+  const { accessToken } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  const loadOrders = async () => {
+    const response = await getAdminOrders();
+    setOrders(response);
+  };
+
+  useEffect(() => {
+    loadOrders().catch(() => setOrders([]));
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -23,9 +35,10 @@ const AdminOrdersPage = () => {
             <td className="px-4 py-3">
               <select
                 value={order.status}
-                onChange={(e) => {
-                  updateOrderStatus(order.id, e.target.value as OrderStatus);
-                  setOrders(getAdminOrders());
+                onChange={async (e) => {
+                  if (!accessToken) return;
+                  await updateOrderStatus(accessToken, order.id, e.target.value as OrderStatus);
+                  await loadOrders();
                 }}
                 className="rounded-xl border border-slate-200 px-2 py-1 text-xs"
               >

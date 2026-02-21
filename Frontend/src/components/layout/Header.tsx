@@ -2,11 +2,13 @@ import { ShoppingCart } from 'lucide-react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCart } from '../../state/cart/CartContext';
+import { useAuth } from '../../state/auth/AuthContext';
 
 export const Header = () => {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
   const { itemCount } = useCart();
+  const { isAdmin, accessToken, logout } = useAuth();
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +22,12 @@ export const Header = () => {
         <nav className="ml-auto flex items-center gap-3 text-sm font-medium sm:ml-0 sm:gap-5">
           <NavLink to="/" className="text-slate-600 hover:text-brand-500">Home</NavLink>
           <NavLink to="/shop" className="text-slate-600 hover:text-brand-500">Shop</NavLink>
-          <NavLink to="/admin" className="text-slate-600 hover:text-brand-500">Admin</NavLink>
+          {isAdmin ? <NavLink to="/admin" className="text-slate-600 hover:text-brand-500">Admin</NavLink> : null}
+          {accessToken ? (
+            <button onClick={logout} className="text-slate-600 hover:text-brand-500">Logout</button>
+          ) : (
+            <NavLink to="/login" className="text-slate-600 hover:text-brand-500">Login</NavLink>
+          )}
         </nav>
         <form onSubmit={onSearch} className="order-3 w-full sm:order-none sm:ml-auto sm:w-64">
           <input

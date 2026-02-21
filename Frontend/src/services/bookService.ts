@@ -1,128 +1,63 @@
 import { Book, BookFilter } from '../types/book';
+import { request } from './apiClient';
 
-const bookData: Book[] = [
-  {
-    id: '1',
-    title: 'The Midnight Library',
-    author: 'Matt Haig',
-    description: 'A thought-provoking novel about life choices, regrets, and alternate realities.',
-    shortDescription: 'A novel about second chances between life and death.',
-    price: 16.99,
-    year: 2020,
-    category: 'Fiction',
-    stock: 32,
-    rating: 4.6,
-    reviewsCount: 248,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Midnight+Library',
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'Atomic Habits',
-    author: 'James Clear',
-    description: 'A practical guide to building good habits and breaking bad ones.',
-    shortDescription: 'Tiny changes, remarkable results for your daily life.',
-    price: 18.5,
-    year: 2018,
-    category: 'Science',
-    stock: 44,
-    rating: 4.8,
-    reviewsCount: 520,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Atomic+Habits',
-    featured: true,
-  },
-  {
-    id: '3',
-    title: 'Steve Jobs',
-    author: 'Walter Isaacson',
-    description: 'The exclusive biography of Apple co-founder Steve Jobs.',
-    shortDescription: 'The life story of one of technology’s greatest innovators.',
-    price: 22.99,
-    year: 2011,
-    category: 'Biography',
-    stock: 15,
-    rating: 4.5,
-    reviewsCount: 301,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Steve+Jobs',
-  },
-  {
-    id: '4',
-    title: 'Clean Code',
-    author: 'Robert C. Martin',
-    description: 'A handbook of agile software craftsmanship and maintainable code practices.',
-    shortDescription: 'Classic software engineering principles for clean, robust code.',
-    price: 35,
-    year: 2008,
-    category: 'Technology',
-    stock: 22,
-    rating: 4.7,
-    reviewsCount: 412,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Clean+Code',
-    featured: true,
-  },
-  {
-    id: '5',
-    title: 'Sapiens',
-    author: 'Yuval Noah Harari',
-    description: 'A brief history of humankind from the Stone Age to modern times.',
-    shortDescription: 'How Homo sapiens came to dominate the world.',
-    price: 19.99,
-    year: 2014,
-    category: 'History',
-    stock: 29,
-    rating: 4.7,
-    reviewsCount: 680,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Sapiens',
-    featured: true,
-  },
-  {
-    id: '6',
-    title: 'Deep Work',
-    author: 'Cal Newport',
-    description: 'Rules for focused success in a distracted world.',
-    shortDescription: 'Master concentration and produce better results.',
-    price: 17.5,
-    year: 2016,
-    category: 'Science',
-    stock: 21,
-    rating: 4.4,
-    reviewsCount: 198,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Deep+Work',
-  },
-  {
-    id: '7',
-    title: '1984',
-    author: 'George Orwell',
-    description: 'A dystopian classic exploring surveillance and totalitarian control.',
-    shortDescription: 'A timeless warning about power, control, and truth.',
-    price: 12.99,
-    year: 1949,
-    category: 'Fiction',
-    stock: 56,
-    rating: 4.6,
-    reviewsCount: 755,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=1984',
-  },
-  {
-    id: '8',
-    title: 'Educated',
-    author: 'Tara Westover',
-    description: 'A memoir about family, self-invention, and the transformative power of education.',
-    shortDescription: 'From isolated childhood to Cambridge PhD.',
-    price: 14.99,
-    year: 2018,
-    category: 'Biography',
-    stock: 18,
-    rating: 4.5,
-    reviewsCount: 342,
-    image: 'https://placehold.co/600x800/e2e8f0/334155?text=Educated',
-  },
-];
+interface ApiBookListResponse {
+  id: number;
+  title: string;
+  price: number;
+  quantityInStock: number;
+}
 
-export const getBooks = (): Book[] => [...bookData];
-export const getFeaturedBooks = (): Book[] => bookData.filter((book) => book.featured).slice(0, 4);
-export const getCategories = (): string[] => [...new Set(bookData.map((book) => book.category))];
-export const getBookById = (id: string): Book | undefined => bookData.find((book) => book.id === id);
+interface ApiBookResponse extends ApiBookListResponse {
+  pageCount: number;
+  publisherId: number;
+  authorId: number;
+  genreId: number;
+  bindingId: number;
+  description?: string | null;
+  imageUrl?: string | null;
+}
+
+const mapBookList = (book: ApiBookListResponse): Book => ({
+  id: String(book.id),
+  title: book.title,
+  author: 'Unknown author',
+  description: book.title,
+  shortDescription: book.title,
+  price: book.price,
+  year: new Date().getFullYear(),
+  category: 'Fiction',
+  stock: book.quantityInStock,
+  rating: 0,
+  reviewsCount: 0,
+  image: 'https://placehold.co/600x800/e2e8f0/334155?text=Book',
+  featured: false,
+});
+
+const mapBookDetails = (book: ApiBookResponse): Book => ({
+  ...mapBookList(book),
+  author: `Author #${book.authorId}`,
+  category: `Genre #${book.genreId}` as Book['category'],
+  description: book.description ?? book.title,
+  shortDescription: (book.description ?? book.title).slice(0, 100),
+  year: book.pageCount,
+  image: book.imageUrl ?? 'https://placehold.co/600x800/e2e8f0/334155?text=Book',
+});
+
+export const getBooks = async (): Promise<Book[]> => {
+  const books = await request<ApiBookListResponse[]>('/api/book');
+  return books.map(mapBookList);
+};
+
+export const getFeaturedBooks = async (): Promise<Book[]> => (await getBooks()).slice(0, 4);
+export const getCategories = (books: Book[]): string[] => [...new Set(books.map((book) => book.category))];
+
+export const getBookById = async (id: string): Promise<Book | undefined> => {
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) return undefined;
+  const book = await request<ApiBookResponse>(`/api/book/${numericId}`);
+  return mapBookDetails(book);
+};
 
 export const filterBooks = (books: Book[], filter: BookFilter): Book[] => {
   const filtered = books.filter((book) => {
