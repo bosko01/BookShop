@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../state/auth/AuthContext';
 
 const LoginPage = () => {
@@ -36,6 +36,10 @@ const LoginPage = () => {
         {isAdmin ? <p className="text-sm text-emerald-600">Ulogovan admin korisnik.</p> : null}
         <button type="submit" className="w-full rounded-xl bg-brand-500 py-3 font-semibold text-white hover:bg-brand-600">Sign In</button>
       </form>
+      <p className="mt-4 text-sm text-slate-500">
+        Nemate profil?{' '}
+        <Link to="/register" className="font-medium text-brand-500 hover:text-brand-600">Registrujte se</Link>
+      </p>
     </section>
     <aside className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-blue-700 p-10 text-white">
       <h2 className="text-3xl font-bold">BookShop</h2>

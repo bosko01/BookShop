@@ -7,6 +7,7 @@ import ShopPage from '../pages/ShopPage';
 import BookDetailsPage from '../pages/BookDetailsPage';
 import CartPage from '../pages/CartPage';
 import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminBooksPage from '../pages/admin/AdminBooksPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'books/:id', element: <BookDetailsPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'login', element: <LoginPage /> },
+      { path: 'register', element: <RegisterPage /> },
     ],
   },
   {
