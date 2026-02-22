@@ -35,3 +35,17 @@ export const getRoleFromJwt = (token: string): string | null => {
     return null;
   }
 };
+
+
+export const getUserIdFromJwt = (token: string): number | null => {
+  try {
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) return null;
+    const payload = JSON.parse(atob(payloadBase64)) as Record<string, string>;
+    const value = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+    const userId = Number(value);
+    return Number.isNaN(userId) ? null : userId;
+  } catch {
+    return null;
+  }
+};
