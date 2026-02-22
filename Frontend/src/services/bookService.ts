@@ -45,7 +45,7 @@ const mapBookDetails = (book: ApiBookResponse): Book => ({
 });
 
 export const getBooks = async (): Promise<Book[]> => {
-  const books = await request<ApiBookListResponse[]>('/api/book');
+  const books = await request<ApiBookListResponse[]>('/api/Book');
   return books.map(mapBookList);
 };
 

@@ -102,8 +102,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-        policy.WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
+        policy.SetIsOriginAllowed(origin =>
+            Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
+            uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)).AllowAnyHeader()
             .AllowAnyMethod());
 });
 
@@ -118,7 +119,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("Frontend");
 app.UseExceptionHandler();
 app.UseAuthentication();
