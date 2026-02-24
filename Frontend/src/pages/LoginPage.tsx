@@ -1,10 +1,11 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../state/auth/AuthContext';
 
 const LoginPage = () => {
   const { login, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,7 +15,9 @@ const LoginPage = () => {
     setError('');
     try {
       await login(email, password);
-      navigate('/admin');
+      const fromPath = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
+      const redirectTo = fromPath ? `${fromPath.pathname ?? ''}${fromPath.search ?? ''}${fromPath.hash ?? ''}` : '/';
+      navigate(redirectTo || '/', { replace: true });
     } catch {
       setError('Pogrešni kredencijali.');
     }

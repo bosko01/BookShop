@@ -59,7 +59,7 @@ const BookDetailsPage = () => {
         userId,
         rating,
         comment: comment.trim() || undefined,
-      });
+      }, accessToken);
       setComment('');
       setRating(5);
       setReviewSuccess('Recenzija je uspešno dodata.');

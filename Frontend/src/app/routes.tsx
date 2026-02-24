@@ -12,12 +12,13 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminBooksPage from '../pages/admin/AdminBooksPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
 import { useAuth } from '../state/auth/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 const RequireAdmin = ({ children }: { children: ReactNode }) => {
   const { isAdmin } = useAuth();
+  const location = useLocation();
   if (!isAdmin) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   return <>{children}</>;
 };

@@ -17,8 +17,9 @@ interface CreateReviewPayload {
 
 export const getReviewsByBookId = (bookId: number) => request<Review[]>(`/api/reviews/by-book/${bookId}`);
 
-export const createReview = (payload: CreateReviewPayload) =>
+export const createReview = (payload: CreateReviewPayload, token: string) =>
   request<number>('/api/reviews', {
     method: 'POST',
     body: payload,
+    token,
   });

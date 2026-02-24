@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using BookShop.Application.Review.Contracts;
 using BookShop.Application.Review.Contracts.Request;
 using BookShop.Application.Review.Contracts.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.API.Controllers;
@@ -25,17 +27,24 @@ public sealed class ReviewsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ReviewResponse>>> GetByUser(int userId, CancellationToken ct) => Ok(await _reviewService.GetByUserIdAsync(userId, ct));
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<int>> Create([FromBody] CreateReviewRequest request, CancellationToken ct)
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userIdFromToken) || userIdFromToken != request.UserId)
+            return Forbid();
+
         var id = await _reviewService.CreateAsync(request, ct);
         return CreatedAtAction(nameof(GetById), new { id }, id);
     }
 
     [HttpPut("{id:int}")]
+    [Authorize]
     public async Task<ActionResult<ReviewResponse>> Update(int id, [FromBody] UpdateReviewRequest request, CancellationToken ct)
         => Ok(await _reviewService.UpdateAsync(id, request, ct));
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         await _reviewService.DeleteAsync(id, ct);
