@@ -1,16 +1,74 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CartSummary } from '../components/cart/CartSummary';
 import { CartTable } from '../components/cart/CartTable';
 import { getUserIdFromJwt } from '../services/authService';
-import { createCheckoutSession, createOrder } from '../services/checkoutService';
+import { createCheckoutSession, createOrder, getOrderStatus } from '../services/checkoutService';
 import { useAuth } from '../state/auth/AuthContext';
 import { useCart } from '../state/cart/CartContext';
+
+const PAYMENT_STATUS_POLL_RETRIES = 6;
+const PAYMENT_STATUS_POLL_INTERVAL_MS = 1000;
+
+const sleep = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
 
 const CartPage = () => {
   const { items, subtotal, updateQuantity, removeFromCart, clearCart } = useCart();
   const { accessToken } = useAuth();
   const [checkoutError, setCheckoutError] = useState('');
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentState = params.get('payment');
+    const orderIdFromQuery = Number(params.get('orderId'));
+
+    if (paymentState !== 'success' || !Number.isInteger(orderIdFromQuery) || orderIdFromQuery <= 0 || !accessToken) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const finalizeSuccessfulCheckout = async () => {
+      let isPaid = false;
+
+      for (let attempt = 0; attempt < PAYMENT_STATUS_POLL_RETRIES; attempt += 1) {
+        if (isCancelled) {
+          return;
+        }
+
+        const status = await getOrderStatus(accessToken, orderIdFromQuery);
+        if (status === 'Paid') {
+          isPaid = true;
+          break;
+        }
+
+        await sleep(PAYMENT_STATUS_POLL_INTERVAL_MS);
+      }
+
+      if (isCancelled) {
+        return;
+      }
+
+      if (isPaid) {
+        clearCart();
+      }
+
+      params.delete('payment');
+      params.delete('orderId');
+
+      const nextQuery = params.toString();
+      const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+      window.history.replaceState({}, '', nextUrl);
+    };
+
+    void finalizeSuccessfulCheckout();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [accessToken, clearCart]);
 
   const onCheckout = async () => {
     setCheckoutError('');
@@ -42,7 +100,7 @@ const CartPage = () => {
         userId,
         amount: total,
         currency: 'usd',
-        successUrl: `${window.location.origin}/cart?payment=success`,
+        successUrl: `${window.location.origin}/cart?payment=success&orderId=${orderId}`,
         cancelUrl: `${window.location.origin}/cart?payment=cancelled`,
       });
 
@@ -50,7 +108,6 @@ const CartPage = () => {
         throw new Error('Missing Stripe checkout URL.');
       }
 
-      clearCart();
       window.location.href = session.url;
     } catch {
       setCheckoutError('Checkout nije uspeo. Pokušajte ponovo.');
