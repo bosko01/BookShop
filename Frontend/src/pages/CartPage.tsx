@@ -22,53 +22,18 @@ const CartPage = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paymentState = params.get('payment');
-    const orderIdFromQuery = Number(params.get('orderId'));
 
-    if (paymentState !== 'success' || !Number.isInteger(orderIdFromQuery) || orderIdFromQuery <= 0 || !accessToken) {
+    if (paymentState !== 'success') {
       return;
     }
 
-    let isCancelled = false;
+    clearCart();
+    params.delete('payment');
 
-    const finalizeSuccessfulCheckout = async () => {
-      let isPaid = false;
-
-      for (let attempt = 0; attempt < PAYMENT_STATUS_POLL_RETRIES; attempt += 1) {
-        if (isCancelled) {
-          return;
-        }
-
-        const status = await getOrderStatus(accessToken, orderIdFromQuery);
-        if (status === 'Paid') {
-          isPaid = true;
-          break;
-        }
-
-        await sleep(PAYMENT_STATUS_POLL_INTERVAL_MS);
-      }
-
-      if (isCancelled) {
-        return;
-      }
-
-      if (isPaid) {
-        clearCart();
-      }
-
-      params.delete('payment');
-      params.delete('orderId');
-
-      const nextQuery = params.toString();
-      const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
-      window.history.replaceState({}, '', nextUrl);
-    };
-
-    void finalizeSuccessfulCheckout();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [accessToken, clearCart]);
+    const nextQuery = params.toString();
+    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    window.history.replaceState({}, '', nextUrl);
+  }, [clearCart]);
 
   const onCheckout = async () => {
     setCheckoutError('');
