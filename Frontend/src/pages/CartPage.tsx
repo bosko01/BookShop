@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CartSummary } from '../components/cart/CartSummary';
 import { CartTable } from '../components/cart/CartTable';
 import { getUserIdFromJwt } from '../services/authService';
@@ -11,6 +11,22 @@ const CartPage = () => {
   const { accessToken } = useAuth();
   const [checkoutError, setCheckoutError] = useState('');
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentState = params.get('payment');
+
+    if (paymentState !== 'success') {
+      return;
+    }
+
+    clearCart();
+    params.delete('payment');
+
+    const nextQuery = params.toString();
+    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    window.history.replaceState({}, '', nextUrl);
+  }, [clearCart]);
 
   const onCheckout = async () => {
     setCheckoutError('');
@@ -50,7 +66,6 @@ const CartPage = () => {
         throw new Error('Missing Stripe checkout URL.');
       }
 
-      clearCart();
       window.location.href = session.url;
     } catch {
       setCheckoutError('Checkout nije uspeo. Pokušajte ponovo.');
