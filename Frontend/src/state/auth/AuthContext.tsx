@@ -1,5 +1,6 @@
 import { ReactNode, createContext, useContext, useMemo, useState } from 'react';
 import { getRoleFromJwt, login as loginRequest } from '../../services/authService';
+import { clearAuthTokens, getStoredAccessToken, storeAuthTokens } from './authStorage';
 
 interface AuthState {
   accessToken: string | null;
@@ -9,11 +10,9 @@ interface AuthState {
   logout: () => void;
 }
 
-const ACCESS_TOKEN_KEY = 'bookshop_access_token';
-
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
-const readInitialToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
+const readInitialToken = () => getStoredAccessToken();
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(readInitialToken);
@@ -22,12 +21,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const response = await loginRequest(email, password);
-    localStorage.setItem(ACCESS_TOKEN_KEY, response.accessToken);
+    storeAuthTokens(response.accessToken, response.refreshToken);
     setAccessToken(response.accessToken);
   };
 
   const logout = () => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    clearAuthTokens();
     setAccessToken(null);
   };
 
