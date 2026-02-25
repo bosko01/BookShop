@@ -28,13 +28,20 @@ public sealed class ReviewsController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<int>> Create([FromBody] CreateReviewRequest request, CancellationToken ct)
+    public async Task<ActionResult<int>> Create(
+    [FromBody] CreateReviewRequest request,
+    CancellationToken ct)
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(userIdClaim, out var userIdFromToken) || userIdFromToken != request.UserId)
-            return Forbid();
+        var userIdClaim =
+            User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
 
-        var id = await _reviewService.CreateAsync(request, ct);
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var newRequest = request with { UserId = userId };
+
+        var id = await _reviewService.CreateAsync(newRequest, ct);
         return CreatedAtAction(nameof(GetById), new { id }, id);
     }
 

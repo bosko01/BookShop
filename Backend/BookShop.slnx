@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/src/">
+    <File Path="InitialData.txt" />
+    <File Path="InitialData2.txt" />
     <Project Path="src/BookShop.API/BookShop.API.csproj" />
     <Project Path="src/BookShop.Application/BookShop.Application.csproj" />
     <Project Path="src/BookShop.Domain/BookShop.Domain.csproj" />

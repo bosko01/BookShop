@@ -49,6 +49,8 @@ const BookDetailsPage = () => {
 
     const userId = getUserIdFromJwt(accessToken);
     if (!userId) {
+      console.log('accessToken:', accessToken);
+console.log('user ID :', userId);
       setReviewError('Nije moguće prepoznati korisnika iz tokena.');
       return;
     }

@@ -1,0 +1,197 @@
+BEGIN TRAN;
+
+-- =====================================================
+-- DODATNI AUTORI (ako već postoje, neće praviti problem)
+-- =====================================================
+INSERT INTO dbo.Authors (FirstName, LastName, Biography)
+VALUES
+('Fjodor', 'Dostojevski', 'Ruski pisac psiholoških i filozofskih romana.'),
+('Lav', 'Tolstoj', 'Autor epskih romana i društvenih analiza.'),
+('Albert', 'Kami', 'Francuski filozof egzistencijalizma.'),
+('Ernest', 'Hemingvej', 'Američki pisac poznat po minimalističkom stilu.'),
+('George', 'Orwell', 'Britanski pisac političkih alegorija.'),
+('Gabriel', 'Garcia Marquez', 'Predstavnik magičnog realizma.'),
+('Jane', 'Austen', 'Autorka društvenih romana 19. veka.'),
+('Stephen', 'King', 'Pisac horor i triler romana.');
+
+-- =====================================================
+-- 20 KNJIGA
+-- =====================================================
+INSERT INTO dbo.Books
+(
+    Title, Description, ImageUrl, PageCount, Price, QuantityInStock,
+    PublisherId, AuthorId, GenreId, BindingId,
+    CreatedAtUtc, IsDeleted, DeletedAtUtc
+)
+VALUES
+
+-- 1
+('Zločin i kazna',
+'Psihološki roman o krivici i iskupljenju.',
+'https://example.com/zlocin.jpg',
+671, 1399.00, 45,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Dostojevski'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 2
+('Rat i mir',
+'Epski roman o ruskom društvu tokom Napoleonovih ratova.',
+'https://example.com/ratimir.jpg',
+1225, 1999.00, 30,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Tolstoj'),
+(SELECT Id FROM Genres WHERE Name='Historical Fiction'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 3
+('Stranac',
+'Egzistencijalni roman o apsurdu i ravnodušnosti.',
+'https://example.com/stranac.jpg',
+185, 899.00, 60,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Kami'),
+(SELECT Id FROM Genres WHERE Name='Philosophical'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 4
+('Starac i more',
+'Priča o istrajnosti i borbi sa prirodom.',
+'https://example.com/staracimore.jpg',
+127, 799.00, 70,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Hemingvej'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 5
+('1984',
+'Distopijski roman o totalitarizmu i nadzoru.',
+'https://example.com/1984.jpg',
+328, 1099.00, 50,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Orwell'),
+(SELECT Id FROM Genres WHERE Name='Drama'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 6
+('Sto godina samoće',
+'Magijski realizam i istorija porodice Buendija.',
+'https://example.com/100godina.jpg',
+417, 1299.00, 40,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Marquez'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 7
+('Ponos i predrasude',
+'Romantični roman o društvenim normama.',
+'https://example.com/ponos.jpg',
+432, 999.00, 55,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Austen'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 8
+('Isijavanje',
+'Psihološki horor smešten u izolovanom hotelu.',
+'https://example.com/isijavanje.jpg',
+447, 1199.00, 35,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='King'),
+(SELECT Id FROM Genres WHERE Name='Drama'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+-- 9-20 (kraće da ne bude predugačko ali realno)
+
+('Ana Karenjina','Tragična priča o ljubavi i društvu.','https://example.com/ana.jpg',864,1599,25,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Tolstoj'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+('Idiot','Roman o čistoti i društvenoj korupciji.','https://example.com/idiot.jpg',656,1399,30,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Dostojevski'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+('Proces','Priča o apsurdnom sudskom procesu.','https://example.com/proces.jpg',300,999,40,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Kami'),
+(SELECT Id FROM Genres WHERE Name='Philosophical'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+('Životinjska farma','Politička alegorija o revoluciji.','https://example.com/farma.jpg',150,699,80,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Orwell'),
+(SELECT Id FROM Genres WHERE Name='Drama'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+('Kuga','Roman o epidemiji i ljudskoj prirodi.','https://example.com/kuga.jpg',350,1099,45,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Kami'),
+(SELECT Id FROM Genres WHERE Name='Philosophical'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+('Lovac u žitu','Roman o odrastanju i otuđenju.','https://example.com/lovac.jpg',277,999,60,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Hemingvej'),
+(SELECT Id FROM Genres WHERE Name='Classic'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+('Grobnica za Borisa Davidoviča','Zbirka pripovedaka o totalitarizmu.','https://example.com/grobnica.jpg',210,899,30,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Kiš'),
+(SELECT Id FROM Genres WHERE Name='Short Stories'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+('Na Drini ćuprija','Istorijski roman o mostu i vremenu.','https://example.com/drina.jpg',368,1499,40,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Andrić'),
+(SELECT Id FROM Genres WHERE Name='Historical Fiction'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+('Derviš i smrt','Roman o pravdi i ličnoj borbi.','https://example.com/dervis.jpg',456,1299,50,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Selimović'),
+(SELECT Id FROM Genres WHERE Name='Philosophical'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL),
+
+('Besnilo','Roman o panici i društvu.','https://example.com/besnilo.jpg',512,1699,20,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Pekić'),
+(SELECT Id FROM Genres WHERE Name='Drama'),
+(SELECT Id FROM Bindings WHERE Name='Hardcover'),
+SYSUTCDATETIME(),0,NULL),
+
+('Saputnici','Eseji i zapisi o društvu.','https://example.com/saputnici.jpg',220,899,35,
+(SELECT TOP 1 Id FROM Publishers),
+(SELECT Id FROM Authors WHERE LastName='Sekulić'),
+(SELECT Id FROM Genres WHERE Name='Short Stories'),
+(SELECT Id FROM Bindings WHERE Name='Paperback'),
+SYSUTCDATETIME(),0,NULL);
+
+COMMIT TRAN;
+
+SELECT COUNT(*) AS TotalBooks FROM Books;

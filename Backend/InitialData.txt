@@ -1,0 +1,263 @@
+BEGIN TRAN;
+
+-- =========================
+-- 1) Authors
+-- =========================
+INSERT INTO dbo.Authors (FirstName, LastName, Biography)
+VALUES
+('Ivo', 'Andrić', 'Nobelovac, autor romana i pripovedaka; poznat po realističnom prikazu Balkana.'),
+('Meša', 'Selimović', 'Autor romana "Derviš i smrt", tematizuje moralne dileme i društvene pritiske.'),
+('Danilo', 'Kiš', 'Pisac i esejista, poznat po modernističkom izrazu i istorijskim temama.'),
+('Isidora', 'Sekulić', 'Književnica i esejistkinja, jedna od najznačajnijih srpskih autorki.'),
+('Borislav', 'Pekić', 'Autor romana i drama, poznat po kompleksnim narativima i satiri.');
+
+-- =========================
+-- 2) Bindings
+-- =========================
+INSERT INTO dbo.Bindings (Name)
+VALUES
+('Paperback'),
+('Hardcover'),
+('Leatherbound');
+
+-- =========================
+-- 3) Genres
+-- =========================
+INSERT INTO dbo.Genres (Name)
+VALUES
+('Classic'),
+('Historical Fiction'),
+('Philosophical'),
+('Drama'),
+('Short Stories');
+
+-- =========================
+-- 4) PaymentMethods
+-- =========================
+INSERT INTO dbo.PaymentMethods (Name, Description, IsActive)
+VALUES
+('Card', 'Visa/Mastercard online payment', 1),
+('CashOnDelivery', 'Pay in cash upon delivery', 1),
+('BankTransfer', 'Payment via bank transfer / e-banking', 1);
+
+-- =========================
+-- 5) Publishers
+-- =========================
+INSERT INTO dbo.Publishers (Name, Address, City, Country, PhoneNumber)
+VALUES
+('Laguna', 'Bulevar Oslobođenja 1', 'Beograd', 'Serbia', '+381 11 123 456'),
+('Vulkan Izdavaštvo', 'Nemanjina 10', 'Beograd', 'Serbia', '+381 11 222 333'),
+('Akademska knjiga', 'Gundulićeva 8', 'Novi Sad', 'Serbia', '+381 21 555 777');
+
+-- =========================
+-- 6) Users
+-- =========================
+INSERT INTO dbo.Users (FirstName, LastName, Email, PasswordHash, Role, CreatedAtUtc, IsDeleted, DeletedAtUtc)
+VALUES
+('Marko', 'Jovanović', 'marko.jovanovic@example.com', 'HASH_DEMO_1', 1, SYSUTCDATETIME(), 0, NULL),
+('Jelena', 'Petrović', 'jelena.petrovic@example.com', 'HASH_DEMO_2', 1, SYSUTCDATETIME(), 0, NULL),
+('Nikola', 'Ilić', 'nikola.ilic@example.com', 'HASH_DEMO_3', 2, SYSUTCDATETIME(), 0, NULL),
+('Ana', 'Stojanović', 'ana.stojanovic@example.com', 'HASH_DEMO_4', 1, SYSUTCDATETIME(), 0, NULL);
+
+-- =========================
+-- 7) Books (use existing IDs via subqueries)
+-- =========================
+INSERT INTO dbo.Books
+(
+    Title, Description, ImageUrl, PageCount, Price, QuantityInStock,
+    PublisherId, AuthorId, GenreId, BindingId,
+    CreatedAtUtc, IsDeleted, DeletedAtUtc
+)
+VALUES
+(
+    'Na Drini ćuprija',
+    'Roman koji prati istoriju i živote ljudi oko mosta na Drini kroz više epoha.',
+    'https://example.com/images/na-drini-cuprija.jpg',
+    368, 1499.00, 40,
+    (SELECT TOP 1 Id FROM dbo.Publishers WHERE Name = 'Laguna'),
+    (SELECT TOP 1 Id FROM dbo.Authors WHERE FirstName='Ivo' AND LastName='Andrić'),
+    (SELECT TOP 1 Id FROM dbo.Genres WHERE Name = 'Historical Fiction'),
+    (SELECT TOP 1 Id FROM dbo.Bindings WHERE Name = 'Hardcover'),
+    SYSUTCDATETIME(), 0, NULL
+),
+(
+    'Derviš i smrt',
+    'Filozofski roman o unutrašnjoj borbi, pravdi i moći.',
+    'https://example.com/images/dervis-i-smrt.jpg',
+    456, 1299.00, 55,
+    (SELECT TOP 1 Id FROM dbo.Publishers WHERE Name = 'Vulkan Izdavaštvo'),
+    (SELECT TOP 1 Id FROM dbo.Authors WHERE FirstName='Meša' AND LastName='Selimović'),
+    (SELECT TOP 1 Id FROM dbo.Genres WHERE Name = 'Philosophical'),
+    (SELECT TOP 1 Id FROM dbo.Bindings WHERE Name = 'Paperback'),
+    SYSUTCDATETIME(), 0, NULL
+),
+(
+    'Bašta, pepeo',
+    'Roman o odrastanju u složenom istorijskom kontekstu, prožet lirskim stilom.',
+    'https://example.com/images/basta-pepeo.jpg',
+    256, 999.00, 30,
+    (SELECT TOP 1 Id FROM dbo.Publishers WHERE Name = 'Akademska knjiga'),
+    (SELECT TOP 1 Id FROM dbo.Authors WHERE FirstName='Danilo' AND LastName='Kiš'),
+    (SELECT TOP 1 Id FROM dbo.Genres WHERE Name = 'Classic'),
+    (SELECT TOP 1 Id FROM dbo.Bindings WHERE Name = 'Paperback'),
+    SYSUTCDATETIME(), 0, NULL
+),
+(
+    'Saputnici',
+    'Zbirka eseja i zapisa o čoveku, društvu i kulturi.',
+    'https://example.com/images/saputnici.jpg',
+    220, 899.00, 25,
+    (SELECT TOP 1 Id FROM dbo.Publishers WHERE Name = 'Akademska knjiga'),
+    (SELECT TOP 1 Id FROM dbo.Authors WHERE FirstName='Isidora' AND LastName='Sekulić'),
+    (SELECT TOP 1 Id FROM dbo.Genres WHERE Name = 'Short Stories'),
+    (SELECT TOP 1 Id FROM dbo.Bindings WHERE Name = 'Hardcover'),
+    SYSUTCDATETIME(), 0, NULL
+),
+(
+    'Besnilo',
+    'Roman sa snažnim društvenim i političkim slojem, napet i slojevit.',
+    'https://example.com/images/besnilo.jpg',
+    512, 1699.00, 20,
+    (SELECT TOP 1 Id FROM dbo.Publishers WHERE Name = 'Laguna'),
+    (SELECT TOP 1 Id FROM dbo.Authors WHERE FirstName='Borislav' AND LastName='Pekić'),
+    (SELECT TOP 1 Id FROM dbo.Genres WHERE Name = 'Drama'),
+    (SELECT TOP 1 Id FROM dbo.Bindings WHERE Name = 'Hardcover'),
+    SYSUTCDATETIME(), 0, NULL
+);
+
+-- =========================
+-- 8) Orders
+-- =========================
+INSERT INTO dbo.Orders (UserId, Status, CreatedAtUtc, TotalAmount)
+VALUES
+(
+    (SELECT TOP 1 Id FROM dbo.Users WHERE Email='marko.jovanovic@example.com'),
+    0,
+    SYSUTCDATETIME(),
+    0 -- set after items
+),
+(
+    (SELECT TOP 1 Id FROM dbo.Users WHERE Email='jelena.petrovic@example.com'),
+    1,
+    DATEADD(day, -1, SYSUTCDATETIME()),
+    0 -- set after items
+);
+
+-- =========================
+-- 9) OrderItems
+-- NOTE: use latest orders per user
+-- =========================
+-- Marko order: 2 items
+INSERT INTO dbo.OrderItems (OrderId, BookId, Quantity, UnitPrice)
+VALUES
+(
+    (SELECT TOP 1 Id FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='marko.jovanovic@example.com') ORDER BY Id DESC),
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Na Drini ćuprija'),
+    1,
+    (SELECT TOP 1 Price FROM dbo.Books WHERE Title='Na Drini ćuprija')
+),
+(
+    (SELECT TOP 1 Id FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='marko.jovanovic@example.com') ORDER BY Id DESC),
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Derviš i smrt'),
+    1,
+    (SELECT TOP 1 Price FROM dbo.Books WHERE Title='Derviš i smrt')
+);
+
+-- Jelena order: 3 items (2x same book allowed in items? here is single row with Quantity=2)
+INSERT INTO dbo.OrderItems (OrderId, BookId, Quantity, UnitPrice)
+VALUES
+(
+    (SELECT TOP 1 Id FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='jelena.petrovic@example.com') ORDER BY Id DESC),
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Bašta, pepeo'),
+    2,
+    (SELECT TOP 1 Price FROM dbo.Books WHERE Title='Bašta, pepeo')
+),
+(
+    (SELECT TOP 1 Id FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='jelena.petrovic@example.com') ORDER BY Id DESC),
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Saputnici'),
+    1,
+    (SELECT TOP 1 Price FROM dbo.Books WHERE Title='Saputnici')
+);
+
+-- =========================
+-- 10) Update Orders.TotalAmount based on items
+-- =========================
+UPDATE o
+SET o.TotalAmount = x.Total
+FROM dbo.Orders o
+JOIN (
+    SELECT oi.OrderId, SUM(oi.Quantity * oi.UnitPrice) AS Total
+    FROM dbo.OrderItems oi
+    GROUP BY oi.OrderId
+) x ON x.OrderId = o.Id;
+
+-- =========================
+-- 11) Reviews (unique per (UserId, BookId))
+-- =========================
+INSERT INTO dbo.Reviews (BookId, UserId, Rating, Comment, CreatedAtUtc, IsDeleted, DeletedAtUtc)
+VALUES
+(
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Na Drini ćuprija'),
+    (SELECT TOP 1 Id FROM dbo.Users WHERE Email='ana.stojanovic@example.com'),
+    5,
+    'Odličan roman, sjajno dočaran istorijski kontekst i likovi.',
+    SYSUTCDATETIME(),
+    0, NULL
+),
+(
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Derviš i smrt'),
+    (SELECT TOP 1 Id FROM dbo.Users WHERE Email='nikola.ilic@example.com'),
+    5,
+    'Težak, ali moćan. Vrlo promišljeno napisan.',
+    SYSUTCDATETIME(),
+    0, NULL
+),
+(
+    (SELECT TOP 1 Id FROM dbo.Books WHERE Title='Bašta, pepeo'),
+    (SELECT TOP 1 Id FROM dbo.Users WHERE Email='jelena.petrovic@example.com'),
+    4,
+    'Lirski i emotivan, povremeno zahteva pažljivo čitanje.',
+    SYSUTCDATETIME(),
+    0, NULL
+);
+
+-- =========================
+-- 12) Invoices (1-1 with Orders, unique index on OrderId)
+-- =========================
+INSERT INTO dbo.Invoices
+(
+    Id, OrderId, PaymentMethodId, Amount,
+    IsPaid, IssuedAtUtc, PaidAtUtc,
+    Provider, ProviderReference
+)
+VALUES
+(
+    NEWID(),
+    (SELECT TOP 1 Id FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='marko.jovanovic@example.com') ORDER BY Id DESC),
+    (SELECT TOP 1 Id FROM dbo.PaymentMethods WHERE Name='Card'),
+    (SELECT TOP 1 TotalAmount FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='marko.jovanovic@example.com') ORDER BY Id DESC),
+    1,
+    SYSUTCDATETIME(),
+    SYSUTCDATETIME(),
+    'Stripe',
+    'pi_demo_10001'
+),
+(
+    NEWID(),
+    (SELECT TOP 1 Id FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='jelena.petrovic@example.com') ORDER BY Id DESC),
+    (SELECT TOP 1 Id FROM dbo.PaymentMethods WHERE Name='CashOnDelivery'),
+    (SELECT TOP 1 TotalAmount FROM dbo.Orders WHERE UserId = (SELECT Id FROM dbo.Users WHERE Email='jelena.petrovic@example.com') ORDER BY Id DESC),
+    0,
+    SYSUTCDATETIME(),
+    NULL,
+    NULL,
+    NULL
+);
+
+COMMIT TRAN;
+
+-- Quick check
+SELECT TOP 10 * FROM dbo.Authors ORDER BY Id DESC;
+SELECT TOP 10 * FROM dbo.Books ORDER BY Id DESC;
+SELECT TOP 10 * FROM dbo.Orders ORDER BY Id DESC;
+SELECT TOP 10 * FROM dbo.Invoices ORDER BY IssuedAtUtc DESC;

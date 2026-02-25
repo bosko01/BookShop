@@ -1,38 +1,33 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7151';
-
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
-interface RequestOptions {
-  method?: HttpMethod;
+type RequestOptions = {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
+  headers?: Record<string, string>;
   token?: string;
-}
-
-export class ApiError extends Error {
-  constructor(message: string, public readonly status: number) {
-    super(message);
-  }
-}
+};
 
 export const request = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const url = `https://localhost:7151${path}`;
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers ?? {}),
+  };
+
+  if (options.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+
+  const response = await fetch(url, {
     method: options.method ?? 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-    },
-    ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new ApiError(message || 'Request failed.', response.status);
+    // možeš dodatno: const text = await response.text();
+    throw new Error(`HTTP ${response.status}`);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
+  // ako endpoint vraća empty body, prilagodi
   return (await response.json()) as T;
 };
-
