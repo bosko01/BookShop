@@ -51,7 +51,7 @@ public sealed class ReviewsController : ControllerBase
         => Ok(await _reviewService.UpdateAsync(id, request, ct));
 
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         await _reviewService.DeleteAsync(id, ct);

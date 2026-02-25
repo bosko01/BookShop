@@ -19,6 +19,7 @@ public sealed class ReviewRepository : IReviewRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.Reviews
+            .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
@@ -26,8 +27,41 @@ public sealed class ReviewRepository : IReviewRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.Reviews
+            .Include(r => r.User)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Review>> GetByBookIdAsync(
+        int bookId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Reviews
+            .Include(r => r.User)
+            .AsNoTracking()
+            .Where(r => r.BookId == bookId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Review>> GetByUserIdAsync(
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Reviews
+            .Include(r => r.User)
+            .AsNoTracking()
+            .Where(r => r.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Review?> GetByBookAndUserAsync(
+        int bookId,
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Reviews
+            .Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.BookId == bookId && r.UserId == userId, cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(

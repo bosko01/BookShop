@@ -32,10 +32,10 @@ public sealed class ReviewService : IReviewService
     }
 
     public async Task<IReadOnlyList<ReviewResponse>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
-        => (await _reviewRepository.GetAllAsync(cancellationToken)).Where(x => x.BookId == bookId).Select(Map).ToList();
+        => (await _reviewRepository.GetByBookIdAsync(bookId, cancellationToken)).Select(Map).ToList();
 
     public async Task<IReadOnlyList<ReviewResponse>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
-        => (await _reviewRepository.GetAllAsync(cancellationToken)).Where(x => x.UserId == userId).Select(Map).ToList();
+        => (await _reviewRepository.GetByUserIdAsync(userId, cancellationToken)).Select(Map).ToList();
 
     public async Task<int> CreateAsync(CreateReviewRequest request, CancellationToken cancellationToken = default)
     {
@@ -43,6 +43,14 @@ public sealed class ReviewService : IReviewService
             throw new NotFoundException("Book", request.BookId);
         if (!await _userRepository.ExistsAsync(request.UserId, cancellationToken))
             throw new NotFoundException("User", request.UserId);
+
+        var existingReview = await _reviewRepository.GetByBookAndUserAsync(request.BookId, request.UserId, cancellationToken);
+        if (existingReview is not null)
+        {
+            existingReview.Update(request.Rating, request.Comment);
+            await _unitOfWork.SaveAsync(cancellationToken);
+            return existingReview.Id;
+        }
 
         var review = Domain.Entities.Review.Create(request.BookId, request.UserId, request.Rating, request.Comment);
         await _reviewRepository.AddAsync(review, cancellationToken);
@@ -65,5 +73,9 @@ public sealed class ReviewService : IReviewService
         await _unitOfWork.SaveAsync(cancellationToken);
     }
 
-    private static ReviewResponse Map(Domain.Entities.Review review) => new(review.Id, review.BookId, review.UserId, review.Rating, review.Comment);
+    private static ReviewResponse Map(Domain.Entities.Review review)
+    {
+        var userFullName = review.User is null ? $"Korisnik #{review.UserId}" : $"{review.User.FirstName} {review.User.LastName}";
+        return new ReviewResponse(review.Id, review.BookId, review.UserId, userFullName, review.Rating, review.Comment);
+    }
 }
