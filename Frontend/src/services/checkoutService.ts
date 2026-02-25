@@ -1,8 +1,13 @@
+import { OrderStatus } from '../types/order';
 import { request } from './apiClient';
 
 interface StripeCheckoutSessionResponse {
   sessionId: string;
   url: string;
+}
+
+interface ApiOrderStatusResponse {
+  status: OrderStatus;
 }
 
 export const createOrder = (token: string, userId: number) =>
@@ -28,3 +33,16 @@ export const createCheckoutSession = (
     token,
     body: payload,
   });
+
+export const getOrderStatus = async (token: string, orderId: number): Promise<OrderStatus | null> => {
+  try {
+    const response = await request<ApiOrderStatusResponse>(`/api/orders/${orderId}`, {
+      method: 'GET',
+      token,
+    });
+
+    return response.status;
+  } catch {
+    return null;
+  }
+};

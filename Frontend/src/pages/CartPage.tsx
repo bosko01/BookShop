@@ -2,9 +2,16 @@ import { useEffect, useState } from 'react';
 import { CartSummary } from '../components/cart/CartSummary';
 import { CartTable } from '../components/cart/CartTable';
 import { getUserIdFromJwt } from '../services/authService';
-import { createCheckoutSession, createOrder } from '../services/checkoutService';
+import { createCheckoutSession, createOrder, getOrderStatus } from '../services/checkoutService';
 import { useAuth } from '../state/auth/AuthContext';
 import { useCart } from '../state/cart/CartContext';
+
+const PAYMENT_STATUS_POLL_RETRIES = 6;
+const PAYMENT_STATUS_POLL_INTERVAL_MS = 1000;
+
+const sleep = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
 
 const CartPage = () => {
   const { items, subtotal, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -58,7 +65,7 @@ const CartPage = () => {
         userId,
         amount: total,
         currency: 'usd',
-        successUrl: `${window.location.origin}/cart?payment=success`,
+        successUrl: `${window.location.origin}/cart?payment=success&orderId=${orderId}`,
         cancelUrl: `${window.location.origin}/cart?payment=cancelled`,
       });
 
