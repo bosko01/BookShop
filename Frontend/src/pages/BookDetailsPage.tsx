@@ -4,7 +4,7 @@ import { RelatedBooks } from '../components/book/RelatedBooks';
 import { Tabs } from '../components/book/Tabs';
 import { getUserIdFromJwt } from '../services/authService';
 import { getBookById, getBooks } from '../services/bookService';
-import { createReview, getReviewsByBookId, Review } from '../services/reviewService';
+import { createReview, deleteReview, getReviewsByBookId, Review } from '../services/reviewService';
 import { useAuth } from '../state/auth/AuthContext';
 import { useCart } from '../state/cart/CartContext';
 import { useParams } from 'react-router-dom';
@@ -24,7 +24,7 @@ const BookDetailsPage = () => {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const { addToCart } = useCart();
-  const { accessToken, login } = useAuth();
+  const { accessToken, isAdmin, login } = useAuth();
 
   useEffect(() => {
     getBookById(id).then(setBook).catch(() => setBook(undefined));
@@ -49,8 +49,6 @@ const BookDetailsPage = () => {
 
     const userId = getUserIdFromJwt(accessToken);
     if (!userId) {
-      console.log('accessToken:', accessToken);
-console.log('user ID :', userId);
       setReviewError('Nije moguće prepoznati korisnika iz tokena.');
       return;
     }
@@ -68,6 +66,25 @@ console.log('user ID :', userId);
       setReviews(await getReviewsByBookId(Number(book.id)));
     } catch {
       setReviewError('Dodavanje recenzije nije uspelo.');
+    }
+  };
+
+
+  const onDeleteReview = async (reviewId: number) => {
+    if (!accessToken || !isAdmin) {
+      return;
+    }
+
+    const isConfirmed = window.confirm('Da li ste sigurni da želite da obrišete ovu recenziju?');
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await deleteReview(reviewId, accessToken);
+      setReviews(await getReviewsByBookId(Number(book?.id)));
+    } catch {
+      setReviewError('Brisanje recenzije nije uspelo.');
     }
   };
 
@@ -100,7 +117,18 @@ console.log('user ID :', userId);
               <ul className="space-y-3">
                 {reviews.map((review) => (
                   <li key={review.id} className="rounded-xl border border-slate-200 p-4">
-                    <p className="text-sm font-medium text-slate-900">Korisnik #{review.userId}</p>
+                    <div className="flex items-start justify-between gap-4">
+                      <p className="text-sm font-medium text-slate-900">{review.userFullName}</p>
+                      {isAdmin ? (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteReview(review.id)}
+                          className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                        >
+                          Delete
+                        </button>
+                      ) : null}
+                    </div>
                     <p className="text-sm text-amber-500">Ocena: {review.rating}/5</p>
                     <p className="text-sm text-slate-600">{review.comment || 'Bez komentara.'}</p>
                   </li>
