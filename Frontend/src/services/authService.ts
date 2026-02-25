@@ -5,6 +5,11 @@ interface LoginResponse {
   refreshToken: string;
 }
 
+interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 interface RegisterRequest {
   firstName: string;
   lastName: string;
@@ -23,6 +28,12 @@ export const register = (payload: RegisterRequest) =>
   request<number>('/api/users', {
     method: 'POST',
     body: payload,
+  });
+
+export const refresh = (refreshToken: string) =>
+  request<RefreshTokenResponse>('/api/auth/refresh', {
+    method: 'POST',
+    body: { refreshToken },
   });
 
 export const getRoleFromJwt = (token: string): string | null => {
