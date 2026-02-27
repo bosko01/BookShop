@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CartSummary } from '../components/cart/CartSummary';
 import { CartTable } from '../components/cart/CartTable';
 import { getUserIdFromJwt } from '../services/authService';
@@ -7,26 +7,11 @@ import { useAuth } from '../state/auth/AuthContext';
 import { useCart } from '../state/cart/CartContext';
 
 const CartPage = () => {
-  const { items, subtotal, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { items, subtotal, updateQuantity, removeFromCart } = useCart();
   const { accessToken } = useAuth();
   const [checkoutError, setCheckoutError] = useState('');
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const paymentState = params.get('payment');
-
-    if (paymentState !== 'success') {
-      return;
-    }
-
-    clearCart();
-    params.delete('payment');
-
-    const nextQuery = params.toString();
-    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
-    window.history.replaceState({}, '', nextUrl);
-  }, [clearCart]);
 
   const onCheckout = async () => {
     setCheckoutError('');
@@ -52,13 +37,18 @@ const CartPage = () => {
 
     setIsCheckoutLoading(true);
     try {
-      const orderId = await createOrder(accessToken, userId);
+      const orderItems = items.map((item) => ({
+        bookId: Number(item.book.id),
+        quantity: item.quantity,
+      }));
+
+      const orderId = await createOrder(accessToken, userId, orderItems);
       const session = await createCheckoutSession(accessToken, {
         orderId,
         userId,
         amount: total,
         currency: 'usd',
-        successUrl: `${window.location.origin}/cart?payment=success&orderId=${orderId}`,
+        successUrl: `${window.location.origin}/checkout/success?orderId=${orderId}`,
         cancelUrl: `${window.location.origin}/cart?payment=cancelled`,
       });
 

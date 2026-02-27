@@ -8,6 +8,7 @@ import BookDetailsPage from '../pages/BookDetailsPage';
 import CartPage from '../pages/CartPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
+import CheckoutSuccessPage from '../pages/CheckoutSuccessPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminBooksPage from '../pages/admin/AdminBooksPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'cart', element: <CartPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
+      { path: 'checkout/success', element: <CheckoutSuccessPage /> },
     ],
   },
   {

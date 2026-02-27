@@ -27,7 +27,8 @@ public sealed class OrderRepository : IOrderRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.Orders
-            .Include(o => o.Items)
+                        .Include(o => o.Items)
+                .ThenInclude(i => i.Book)
             .Include(o => o.Invoice)
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
@@ -37,6 +38,8 @@ public sealed class OrderRepository : IOrderRepository
     {
         return await _dbContext.Orders
             .AsNoTracking()
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Book)
             .ToListAsync(cancellationToken);
     }
 
