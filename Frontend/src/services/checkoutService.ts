@@ -6,15 +6,41 @@ interface StripeCheckoutSessionResponse {
   url: string;
 }
 
-interface ApiOrderStatusResponse {
-  status: OrderStatus;
+interface ApiOrderItem {
+  orderItemId: number;
+  bookId: number;
+  bookTitle: string;
+  quantity: number;
+  unitPrice: number;
 }
 
-export const createOrder = (token: string, userId: number) =>
+interface ApiOrderResponse {
+  id: number;
+  userId: number;
+  totalAmount: number;
+  status: OrderStatus;
+  createdAtUtc: string;
+  itemCount: number;
+  items: ApiOrderItem[];
+}
+
+export interface CheckoutOrderItem {
+  bookId: number;
+  quantity: number;
+}
+
+export interface OrderDetails {
+  id: number;
+  status: OrderStatus;
+  totalAmount: number;
+  items: ApiOrderItem[];
+}
+
+export const createOrder = (token: string, userId: number, items: CheckoutOrderItem[]) =>
   request<number>('/api/orders', {
     method: 'POST',
     token,
-    body: { userId },
+    body: { userId, items },
   });
 
 export const createCheckoutSession = (
@@ -34,15 +60,16 @@ export const createCheckoutSession = (
     body: payload,
   });
 
-export const getOrderStatus = async (token: string, orderId: number): Promise<OrderStatus | null> => {
-  try {
-    const response = await request<ApiOrderStatusResponse>(`/api/orders/${orderId}`, {
-      method: 'GET',
-      token,
-    });
+export const getOrderDetails = async (token: string, orderId: number): Promise<OrderDetails> => {
+  const response = await request<ApiOrderResponse>(`/api/orders/${orderId}`, {
+    method: 'GET',
+    token,
+  });
 
-    return response.status;
-  } catch {
-    return null;
-  }
+  return {
+    id: response.id,
+    status: response.status,
+    totalAmount: response.totalAmount,
+    items: response.items,
+  };
 };

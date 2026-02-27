@@ -11,12 +11,14 @@ public sealed class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IBookRepository _bookRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, IBookRepository bookRepository, IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _userRepository = userRepository;
+        _bookRepository = bookRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -35,6 +37,15 @@ public sealed class OrderService : IOrderService
             throw new NotFoundException("User", request.UserId);
 
         var order = Domain.Entities.Order.Create(request.UserId);
+
+        foreach (var item in request.Items)
+        {
+            var book = await _bookRepository.GetByIdAsync(item.BookId, cancellationToken)
+                ?? throw new NotFoundException("Book", item.BookId);
+
+            order.AddItem(Domain.Entities.OrderItem.Create(book.Id, item.Quantity, book.Price));
+        }
+
         await _orderRepository.AddAsync(order, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
         return order.Id;
@@ -83,5 +94,17 @@ public sealed class OrderService : IOrderService
     }
 
     private static OrderResponse Map(Domain.Entities.Order order)
-        => new(order.Id, order.UserId, order.TotalAmount, order.Status, order.CreatedAtUtc, order.Items.Count);
+        => new(
+            order.Id,
+            order.UserId,
+            order.TotalAmount,
+            order.Status,
+            order.CreatedAtUtc,
+            order.Items.Count,
+            order.Items.Select(item => new OrderItemResponse(
+                item.Id,
+                item.BookId,
+                item.Book?.Title ?? string.Empty,
+                item.Quantity,
+                item.UnitPrice)).ToList());
 }
