@@ -25,19 +25,23 @@ public sealed class StripeWebhookEventParser : IStripeWebhookEventParser
 
         return stripeEvent.Type switch
         {
-            PaymentIntentSucceeded => new StripeWebhookEventData(
-                true,
-                TryGetOrderId((stripeEvent.Data.Object as PaymentIntent)?.Metadata)
-            ),
-
-            CheckoutSessionCompleted => new StripeWebhookEventData(
-                true,
-                GetCheckoutOrderId(stripeEvent.Data.Object as Session)
-            ),
-
-            _ => new StripeWebhookEventData(false, null)
+            PaymentIntentSucceeded => ParsePaymentIntentEvent(stripeEvent.Data.Object as PaymentIntent),
+            CheckoutSessionCompleted => ParseCheckoutSessionEvent(stripeEvent.Data.Object as Session),
+            _ => new StripeWebhookEventData(false, null, null)
         };
     }
+
+    private static StripeWebhookEventData ParsePaymentIntentEvent(PaymentIntent? paymentIntent)
+        => new(
+            true,
+            TryGetOrderId(paymentIntent?.Metadata),
+            paymentIntent?.Id);
+
+    private static StripeWebhookEventData ParseCheckoutSessionEvent(Session? session)
+        => new(
+            true,
+            GetCheckoutOrderId(session),
+            session?.PaymentIntentId ?? session?.Id);
 
     private static int? GetCheckoutOrderId(Session? session)
     {

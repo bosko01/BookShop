@@ -22,6 +22,14 @@ public sealed class InvoiceRepository : IInvoiceRepository
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
     }
 
+
+    public async Task<Invoice?> GetByOrderIdAsync(
+        int orderId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Invoices
+            .FirstOrDefaultAsync(i => i.OrderId == orderId, cancellationToken);
+    }
     public async Task<IReadOnlyList<Invoice>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {

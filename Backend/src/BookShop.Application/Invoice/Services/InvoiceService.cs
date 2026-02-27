@@ -31,6 +31,12 @@ public sealed class InvoiceService : IInvoiceService
         return Map(invoice);
     }
 
+    public async Task<InvoiceResponse> GetByOrderIdAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var invoice = await _invoiceRepository.GetByOrderIdAsync(orderId, cancellationToken) ?? throw new NotFoundException("Invoice for order", orderId);
+        return Map(invoice);
+    }
+
     public async Task<Guid> CreateAsync(CreateInvoiceRequest request, CancellationToken cancellationToken = default)
     {
         if (!await _orderRepository.ExistsAsync(request.OrderId, cancellationToken))

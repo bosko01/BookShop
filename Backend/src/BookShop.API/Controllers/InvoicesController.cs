@@ -18,6 +18,10 @@ public sealed class InvoicesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<InvoiceResponse>> GetById(Guid id, CancellationToken ct) => Ok(await _invoiceService.GetByIdAsync(id, ct));
 
+
+    [HttpGet("by-order/{orderId:int}")]
+    public async Task<ActionResult<InvoiceResponse>> GetByOrderId(int orderId, CancellationToken ct) => Ok(await _invoiceService.GetByOrderIdAsync(orderId, ct));
+
     [HttpPost]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateInvoiceRequest request, CancellationToken ct)
     {
