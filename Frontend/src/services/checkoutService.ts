@@ -24,6 +24,18 @@ interface ApiOrderResponse {
   items: ApiOrderItem[];
 }
 
+interface ApiInvoiceResponse {
+  id: string;
+  orderId: number;
+  paymentMethodId: number;
+  amount: number;
+  isPaid: boolean;
+  issuedAtUtc: string;
+  paidAtUtc: string | null;
+  provider: string | null;
+  providerReference: string | null;
+}
+
 export interface CheckoutOrderItem {
   bookId: number;
   quantity: number;
@@ -34,6 +46,11 @@ export interface OrderDetails {
   status: OrderStatus;
   totalAmount: number;
   items: ApiOrderItem[];
+}
+
+export interface InvoiceDetails {
+  id: string;
+  isPaid: boolean;
 }
 
 export const createOrder = (token: string, userId: number, items: CheckoutOrderItem[]) =>
@@ -71,5 +88,17 @@ export const getOrderDetails = async (token: string, orderId: number): Promise<O
     status: response.status,
     totalAmount: response.totalAmount,
     items: response.items,
+  };
+};
+
+export const getInvoiceByOrderId = async (token: string, orderId: number): Promise<InvoiceDetails> => {
+  const response = await request<ApiInvoiceResponse>(`/api/invoices/by-order/${orderId}`, {
+    method: 'GET',
+    token,
+  });
+
+  return {
+    id: response.id,
+    isPaid: response.isPaid,
   };
 };

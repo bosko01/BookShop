@@ -9,5 +9,6 @@ namespace BookShop.Application.Interfaces.Persistence
 {
     public interface IPaymentMethodRepository : IRepository<PaymentMethodEntity, int>
     {
+        Task<PaymentMethodEntity?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
     }
 }

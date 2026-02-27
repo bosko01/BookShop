@@ -8,5 +8,6 @@ namespace BookShop.Application.Interfaces.Persistence
 {
     public interface IInvoiceRepository : IRepository<InvoiceEntity, Guid>
     {
+        Task<InvoiceEntity?> GetByOrderIdAsync(int orderId, CancellationToken cancellationToken = default);
     }
 }

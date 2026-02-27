@@ -22,6 +22,14 @@ public sealed class PaymentMethodRepository : IPaymentMethodRepository
             .FirstOrDefaultAsync(pm => pm.Id == id, cancellationToken);
     }
 
+
+    public async Task<PaymentMethod?> GetByNameAsync(
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.PaymentMethods
+            .FirstOrDefaultAsync(pm => pm.Name == name, cancellationToken);
+    }
     public async Task<IReadOnlyList<PaymentMethod>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {

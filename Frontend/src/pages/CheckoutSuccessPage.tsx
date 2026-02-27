@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getOrderDetails, OrderDetails } from '../services/checkoutService';
+import { getInvoiceByOrderId, getOrderDetails, InvoiceDetails, OrderDetails } from '../services/checkoutService';
 import { useAuth } from '../state/auth/AuthContext';
 import { useCart } from '../state/cart/CartContext';
 
@@ -9,6 +9,7 @@ const CheckoutSuccessPage = () => {
   const { clearCart } = useCart();
   const [searchParams] = useSearchParams();
   const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [invoice, setInvoice] = useState<InvoiceDetails | null>(null);
   const [error, setError] = useState('');
 
   const orderId = useMemo(() => Number(searchParams.get('orderId')), [searchParams]);
@@ -29,6 +30,37 @@ const CheckoutSuccessPage = () => {
       });
   }, [accessToken, clearCart, orderId]);
 
+  useEffect(() => {
+    if (!accessToken || !orderId) {
+      return;
+    }
+
+    let isMounted = true;
+    let attempts = 0;
+
+    const fetchInvoice = () => {
+      attempts += 1;
+
+      getInvoiceByOrderId(accessToken, orderId)
+        .then((response) => {
+          if (isMounted) {
+            setInvoice(response);
+          }
+        })
+        .catch(() => {
+          if (isMounted && attempts < 5) {
+            window.setTimeout(fetchInvoice, 2000);
+          }
+        });
+    };
+
+    fetchInvoice();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken, orderId]);
+
   if (error) {
     return (
       <section className="rounded-2xl bg-white p-6 shadow-md">
@@ -45,7 +77,10 @@ const CheckoutSuccessPage = () => {
   return (
     <section className="space-y-4 rounded-2xl bg-white p-6 shadow-md">
       <h1 className="text-2xl font-bold text-slate-900">Plaćanje uspešno</h1>
-      <p className="text-slate-700">Broj porudžbine: <span className="font-semibold">#{order.id}</span></p>
+      <p className="text-slate-700">
+        Broj Invoice-a:{' '}
+        <span className="font-semibold">{invoice ? invoice.id : 'U pripremi...'}</span>
+      </p>
       <p className="text-slate-700">Status: <span className="font-semibold text-emerald-600">{order.status}</span></p>
 
       <div>
