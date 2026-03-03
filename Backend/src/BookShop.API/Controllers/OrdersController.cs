@@ -15,22 +15,14 @@ public sealed class OrdersController : ControllerBase
     public OrdersController(IOrderService orderService) => _orderService = orderService;
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetAll(CancellationToken ct)
-        => Ok(await _orderService.GetAllAsync(ct));
-
-    [HttpGet("user/{id:int}")]
     [Authorize]
-    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetByUserId(int id, CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetAll(CancellationToken ct)
     {
-        if (User.IsInRole("Admin"))
-            return Ok(await _orderService.GetByUserIdAsync(id, ct));
-
         if (!TryGetCurrentUserId(out var userId))
             return Unauthorized();
 
-        if (userId != id)
-            return Forbid();
+        if (User.IsInRole("Admin"))
+            return Ok(await _orderService.GetAllAsync(ct));
 
         return Ok(await _orderService.GetByUserIdAsync(userId, ct));
     }

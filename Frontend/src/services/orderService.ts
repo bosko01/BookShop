@@ -19,7 +19,7 @@ const toOrder = (order: ApiOrder): Order => ({
   status: order.status,
 });
 
-export const getMyOrders = async (token: string, userId: number): Promise<Order[]> => {
-  const orders = await request<ApiOrder[]>(`/api/orders/user/${userId}`, { token });
+export const getMyOrders = async (token: string): Promise<Order[]> => {
+  const orders = await request<ApiOrder[]>('/api/orders', { token });
   return orders.map(toOrder);
 };

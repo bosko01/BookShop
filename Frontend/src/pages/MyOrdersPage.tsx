@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { DataTable } from '../components/admin/DataTable';
-import { getUserIdFromJwt } from '../services/authService';
 import { getMyOrders } from '../services/orderService';
 import { useAuth } from '../state/auth/AuthContext';
 import { Order } from '../types/order';
@@ -15,13 +14,7 @@ const MyOrdersPage = () => {
       return;
     }
 
-    const userId = getUserIdFromJwt(accessToken);
-    if (!userId) {
-      setOrders([]);
-      return;
-    }
-
-    getMyOrders(accessToken, userId).then(setOrders).catch(() => setOrders([]));
+    getMyOrders(accessToken).then(setOrders).catch(() => setOrders([]));
   }, [accessToken]);
 
   return (
