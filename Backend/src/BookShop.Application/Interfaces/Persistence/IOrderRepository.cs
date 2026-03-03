@@ -10,6 +10,7 @@ namespace BookShop.Application.Interfaces.Persistence
     public interface IOrderRepository : IRepository<OrderEntity, int>
     {
         Task<OrderEntity?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<OrderEntity>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
 
     }
 }

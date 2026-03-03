@@ -82,8 +82,8 @@ export const deleteAdminBook = async (token: string, id: string): Promise<void> 
   });
 };
 
-export const getAdminOrders = async (): Promise<Order[]> => {
-  const orders = await request<ApiOrder[]>('/api/orders');
+export const getAdminOrders = async (token: string): Promise<Order[]> => {
+  const orders = await request<ApiOrder[]>('/api/orders', { token });
   return orders.map(toOrder);
 };
 

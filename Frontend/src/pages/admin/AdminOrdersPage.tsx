@@ -12,13 +12,18 @@ const AdminOrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
   const loadOrders = async () => {
-    const response = await getAdminOrders();
+    if (!accessToken) {
+      setOrders([]);
+      return;
+    }
+
+    const response = await getAdminOrders(accessToken);
     setOrders(response);
   };
 
   useEffect(() => {
     loadOrders().catch(() => setOrders([]));
-  }, []);
+  }, [accessToken]);
 
   return (
     <div className="space-y-4">

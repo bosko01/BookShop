@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BookShop.Application.Order.Contracts;
 using BookShop.Application.Order.Contracts.Request;
 using BookShop.Application.Order.Contracts.Response;
@@ -14,10 +15,34 @@ public sealed class OrdersController : ControllerBase
     public OrdersController(IOrderService orderService) => _orderService = orderService;
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetAll(CancellationToken ct) => Ok(await _orderService.GetAllAsync(ct));
+    [Authorize]
+    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetAll(CancellationToken ct)
+    {
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
+        if (User.IsInRole("Admin"))
+            return Ok(await _orderService.GetAllAsync(ct));
+
+        return Ok(await _orderService.GetByUserIdAsync(userId, ct));
+    }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<OrderResponse>> GetById(int id, CancellationToken ct) => Ok(await _orderService.GetByIdAsync(id, ct));
+    [Authorize]
+    public async Task<ActionResult<OrderResponse>> GetById(int id, CancellationToken ct)
+    {
+        if (User.IsInRole("Admin"))
+            return Ok(await _orderService.GetByIdAsync(id, ct));
+
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
+        var order = await _orderService.GetByIdForUserAsync(id, userId, ct);
+        if (order is null)
+            return NotFound();
+
+        return Ok(order);
+    }
 
     [HttpPost]
     [Authorize]

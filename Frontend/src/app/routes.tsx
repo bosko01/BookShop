@@ -9,11 +9,21 @@ import CartPage from '../pages/CartPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import CheckoutSuccessPage from '../pages/CheckoutSuccessPage';
+import MyOrdersPage from '../pages/MyOrdersPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminBooksPage from '../pages/admin/AdminBooksPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
 import { useAuth } from '../state/auth/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
+
+const RequireAuth = ({ children }: { children: ReactNode }) => {
+  const { accessToken } = useAuth();
+  const location = useLocation();
+  if (!accessToken) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+  return <>{children}</>;
+};
 
 const RequireAdmin = ({ children }: { children: ReactNode }) => {
   const { isAdmin } = useAuth();
@@ -36,6 +46,7 @@ export const router = createBrowserRouter([
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'checkout/success', element: <CheckoutSuccessPage /> },
+      { path: 'dashboard', element: <RequireAuth><MyOrdersPage /></RequireAuth> },
     ],
   },
   {
