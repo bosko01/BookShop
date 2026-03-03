@@ -83,4 +83,12 @@ public sealed class OrdersController : ControllerBase
         await _orderService.DeleteAsync(id, ct);
         return NoContent();
     }
+
+    private bool TryGetCurrentUserId(out int userId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+
+        return int.TryParse(userIdClaim, out userId);
+    }
 }
