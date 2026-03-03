@@ -60,10 +60,7 @@ const BookDetailsPage = () => {
         rating,
         comment: comment.trim() || undefined,
       }, accessToken);
-      setComment('');
-      setRating(5);
-      setReviewSuccess('Recenzija je uspešno dodata.');
-      setReviews(await getReviewsByBookId(Number(book.id)));
+      window.location.reload();
     } catch {
       setReviewError('Dodavanje recenzije nije uspelo.');
     }
@@ -82,7 +79,7 @@ const BookDetailsPage = () => {
 
     try {
       await deleteReview(reviewId, accessToken);
-      setReviews(await getReviewsByBookId(Number(book?.id)));
+      window.location.reload();
     } catch {
       setReviewError('Brisanje recenzije nije uspelo.');
     }

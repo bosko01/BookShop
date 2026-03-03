@@ -27,8 +27,7 @@ const CartPage = () => {
       return;
     }
 
-    const shipping = subtotal > 0 ? 4.99 : 0;
-    const total = subtotal + shipping;
+    const total = subtotal;
 
     if (total <= 0) {
       setCheckoutError('Korpa je prazna.');
