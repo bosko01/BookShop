@@ -22,6 +22,7 @@ export const Header = () => {
         <nav className="ml-auto flex items-center gap-3 text-sm font-medium sm:ml-0 sm:gap-5">
           <NavLink to="/" className="text-slate-600 hover:text-brand-500">Home</NavLink>
           <NavLink to="/shop" className="text-slate-600 hover:text-brand-500">Shop</NavLink>
+          {accessToken ? <NavLink to="/dashboard" className="text-slate-600 hover:text-brand-500">My Orders</NavLink> : null}
           {isAdmin ? <NavLink to="/admin" className="text-slate-600 hover:text-brand-500">Admin</NavLink> : null}
           {accessToken ? (
             <button onClick={logout} className="text-slate-600 hover:text-brand-500">Logout</button>

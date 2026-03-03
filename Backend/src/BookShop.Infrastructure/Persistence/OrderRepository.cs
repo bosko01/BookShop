@@ -43,6 +43,18 @@ public sealed class OrderRepository : IOrderRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Order>> GetByUserIdAsync(
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Orders
+            .AsNoTracking()
+            .Where(o => o.UserId == userId)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Book)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> ExistsAsync(
         int id,
         CancellationToken cancellationToken = default)

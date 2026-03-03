@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BookShop.Application.Order.Contracts;
 using BookShop.Application.Order.Contracts.Request;
 using BookShop.Application.Order.Contracts.Response;
@@ -14,10 +15,42 @@ public sealed class OrdersController : ControllerBase
     public OrdersController(IOrderService orderService) => _orderService = orderService;
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetAll(CancellationToken ct) => Ok(await _orderService.GetAllAsync(ct));
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetAll(CancellationToken ct)
+        => Ok(await _orderService.GetAllAsync(ct));
+
+    [HttpGet("user/{id:int}")]
+    [Authorize]
+    public async Task<ActionResult<IReadOnlyList<OrderResponse>>> GetByUserId(int id, CancellationToken ct)
+    {
+        if (User.IsInRole("Admin"))
+            return Ok(await _orderService.GetByUserIdAsync(id, ct));
+
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
+        if (userId != id)
+            return Forbid();
+
+        return Ok(await _orderService.GetByUserIdAsync(userId, ct));
+    }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<OrderResponse>> GetById(int id, CancellationToken ct) => Ok(await _orderService.GetByIdAsync(id, ct));
+    [Authorize]
+    public async Task<ActionResult<OrderResponse>> GetById(int id, CancellationToken ct)
+    {
+        if (User.IsInRole("Admin"))
+            return Ok(await _orderService.GetByIdAsync(id, ct));
+
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
+        var order = await _orderService.GetByIdForUserAsync(id, userId, ct);
+        if (order is null)
+            return NotFound();
+
+        return Ok(order);
+    }
 
     [HttpPost]
     [Authorize]
@@ -57,5 +90,13 @@ public sealed class OrdersController : ControllerBase
     {
         await _orderService.DeleteAsync(id, ct);
         return NoContent();
+    }
+
+    private bool TryGetCurrentUserId(out int userId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+
+        return int.TryParse(userIdClaim, out userId);
     }
 }

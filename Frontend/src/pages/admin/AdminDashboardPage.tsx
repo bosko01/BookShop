@@ -2,14 +2,21 @@ import { useEffect, useState } from 'react';
 import { DataTable } from '../../components/admin/DataTable';
 import { StatCards } from '../../components/admin/StatCards';
 import { getAdminOrders } from '../../services/adminService';
+import { useAuth } from '../../state/auth/AuthContext';
 import { Order } from '../../types/order';
 
 const AdminDashboardPage = () => {
   const [recent, setRecent] = useState<Order[]>([]);
+  const { accessToken } = useAuth();
 
   useEffect(() => {
-    getAdminOrders().then((orders) => setRecent(orders.slice(0, 4))).catch(() => setRecent([]));
-  }, []);
+    if (!accessToken) {
+      setRecent([]);
+      return;
+    }
+
+    getAdminOrders(accessToken).then((orders) => setRecent(orders.slice(0, 4))).catch(() => setRecent([]));
+  }, [accessToken]);
 
   return (
     <div className="space-y-6">

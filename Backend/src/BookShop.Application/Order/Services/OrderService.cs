@@ -25,9 +25,21 @@ public sealed class OrderService : IOrderService
     public async Task<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cancellationToken = default)
         => (await _orderRepository.GetAllAsync(cancellationToken)).Select(Map).ToList();
 
+    public async Task<IReadOnlyList<OrderResponse>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+        => (await _orderRepository.GetByUserIdAsync(userId, cancellationToken)).Select(Map).ToList();
+
     public async Task<OrderResponse> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var order = await _orderRepository.GetByIdWithItemsAsync(id, cancellationToken) ?? throw new NotFoundException("Order", id);
+        return Map(order);
+    }
+
+    public async Task<OrderResponse?> GetByIdForUserAsync(int id, int userId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdWithItemsAsync(id, cancellationToken);
+        if (order is null || order.UserId != userId)
+            return null;
+
         return Map(order);
     }
 
