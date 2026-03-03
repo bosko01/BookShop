@@ -6,7 +6,9 @@ namespace BookShop.Application.Order.Contracts;
 public interface IOrderService
 {
     Task<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<OrderResponse>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<OrderResponse> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<OrderResponse?> GetByIdForUserAsync(int id, int userId, CancellationToken cancellationToken = default);
     Task<int> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
     Task MarkAsPaidAsync(int id, CancellationToken cancellationToken = default);
