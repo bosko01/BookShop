@@ -27,15 +27,15 @@ public sealed class AdminAnalyticsService : IAdminAnalyticsService
             .ToList();
 
         var totalSales = paidOrders.Sum(order => order.TotalAmount);
-        var customersWithPaidOrders = paidOrders
+        var customers = orders
             .Select(order => order.UserId)
             .Distinct()
             .Count();
 
         return new AdminAnalyticsResponse(
             TotalSales: totalSales,
-            Orders: paidOrders.Count,
+            Orders: orders.Count,
             Books: books.Count,
-            Customers: customersWithPaidOrders);
+            Customers: customers);
     }
 }
