@@ -1,6 +1,7 @@
 using System.Text;
 using BookShop.API.ErrorHandling;
 using BookShop.API.Security;
+using BookShop.Application.AdminAnalytics.Services;
 using BookShop.Application.Author.Contracts;
 using BookShop.Application.Author.Services;
 using BookShop.Application.Binding.Contracts;
@@ -70,6 +71,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
 builder.Services.AddScoped<IPaymentWebhookService, PaymentWebhookService>();
+builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 
 builder.Services.AddScoped<IStripeWebhookEventParser, StripeWebhookEventParser>();
 builder.Services.AddScoped<IStripeCheckoutService, StripeCheckoutService>();
