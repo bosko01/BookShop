@@ -13,14 +13,16 @@ const emptyStats: AdminAnalytics = {
 };
 
 const AdminDashboardPage = () => {
-  const [recent, setRecent] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<AdminAnalytics>(emptyStats);
+  const [orderSearch, setOrderSearch] = useState('');
   const { accessToken } = useAuth();
 
   useEffect(() => {
     if (!accessToken) {
-      setRecent([]);
+      setOrders([]);
       setStats(emptyStats);
+      setOrderSearch('');
       return;
     }
 
@@ -31,10 +33,10 @@ const AdminDashboardPage = () => {
           getAdminAnalytics(accessToken),
         ]);
 
-        setRecent(orders.slice(0, 4));
+        setOrders(orders);
         setStats(analytics);
       } catch {
-        setRecent([]);
+        setOrders([]);
       }
     };
 
@@ -46,22 +48,41 @@ const AdminDashboardPage = () => {
     return () => window.clearInterval(intervalId);
   }, [accessToken]);
 
+  const normalizedSearch = orderSearch.trim().toLowerCase();
+  const displayedOrders = normalizedSearch
+    ? orders.filter((order) => order.id.toLowerCase().includes(normalizedSearch))
+    : orders.slice(0, 4);
+
   return (
     <div className="space-y-6">
       <StatCards stats={stats} />
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-slate-900">Recent Orders</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-bold text-slate-900">Recent Orders</h2>
+          <input
+            value={orderSearch}
+            onChange={(e) => setOrderSearch(e.target.value)}
+            placeholder="Search Order ID (e.g. ORD-12)"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none ring-brand-200 focus:ring sm:w-72"
+          />
+        </div>
         <DataTable
           headers={['Order ID', 'Customer', 'Date', 'Total', 'Status']}
-          rows={recent.map((order) => (
-            <tr key={order.id} className="border-t border-slate-100">
-              <td className="px-4 py-3 font-medium">{order.id}</td>
-              <td className="px-4 py-3">{order.customer}</td>
-              <td className="px-4 py-3">{order.date}</td>
-              <td className="px-4 py-3">${order.total.toFixed(2)}</td>
-              <td className="px-4 py-3">{order.status}</td>
-            </tr>
-          ))}
+          rows={displayedOrders.length > 0
+            ? displayedOrders.map((order) => (
+                <tr key={order.id} className="border-t border-slate-100">
+                  <td className="px-4 py-3 font-medium">{order.id}</td>
+                  <td className="px-4 py-3">{order.customer}</td>
+                  <td className="px-4 py-3">{order.date}</td>
+                  <td className="px-4 py-3">${order.total.toFixed(2)}</td>
+                  <td className="px-4 py-3">{order.status}</td>
+                </tr>
+              ))
+            : (
+              <tr className="border-t border-slate-100">
+                <td className="px-4 py-3 text-slate-500" colSpan={5}>No orders found.</td>
+              </tr>
+              )}
         />
       </section>
     </div>
