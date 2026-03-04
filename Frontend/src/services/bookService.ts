@@ -18,7 +18,43 @@ interface ApiBookResponse extends ApiBookListResponse {
   imageUrl?: string | null;
 }
 
-const mapBookList = (book: ApiBookListResponse): Book => ({
+interface ApiReview {
+  id: number;
+  bookId: number;
+  rating: number;
+}
+
+interface BookRating {
+  rating: number;
+  reviewsCount: number;
+}
+
+const getBookRatings = (reviews: ApiReview[]): Map<number, BookRating> => {
+  const ratingTotals = new Map<number, { total: number; count: number }>();
+
+  reviews.forEach((review) => {
+    const current = ratingTotals.get(review.bookId) ?? { total: 0, count: 0 };
+    ratingTotals.set(review.bookId, {
+      total: current.total + review.rating,
+      count: current.count + 1,
+    });
+  });
+
+  return new Map(
+    Array.from(ratingTotals.entries()).map(([bookId, value]) => [
+      bookId,
+      {
+        rating: value.total / value.count,
+        reviewsCount: value.count,
+      },
+    ]),
+  );
+};
+
+const mapBookList = (book: ApiBookListResponse, ratings?: Map<number, BookRating>): Book => {
+  const bookRating = ratings?.get(book.id);
+
+  return {
   id: String(book.id),
   title: book.title,
   author: 'Unknown author',
@@ -28,14 +64,15 @@ const mapBookList = (book: ApiBookListResponse): Book => ({
   year: new Date().getFullYear(),
   category: 'Fiction',
   stock: book.quantityInStock,
-  rating: 0,
-  reviewsCount: 0,
+  rating: bookRating?.rating ?? 0,
+  reviewsCount: bookRating?.reviewsCount ?? 0,
   image: 'https://placehold.co/600x800/e2e8f0/334155?text=Book',
   featured: false,
-});
+  };
+};
 
-const mapBookDetails = (book: ApiBookResponse): Book => ({
-  ...mapBookList(book),
+const mapBookDetails = (book: ApiBookResponse, ratings?: Map<number, BookRating>): Book => ({
+  ...mapBookList(book, ratings),
   author: `Author #${book.authorId}`,
   category: `Genre #${book.genreId}` as Book['category'],
   description: book.description ?? book.title,
@@ -45,8 +82,13 @@ const mapBookDetails = (book: ApiBookResponse): Book => ({
 });
 
 export const getBooks = async (): Promise<Book[]> => {
-  const books = await request<ApiBookListResponse[]>('/api/Book');
-  return books.map(mapBookList);
+  const [books, reviews] = await Promise.all([
+    request<ApiBookListResponse[]>('/api/Book'),
+    request<ApiReview[]>('/api/reviews'),
+  ]);
+
+  const ratings = getBookRatings(reviews);
+  return books.map((book) => mapBookList(book, ratings));
 };
 
 export const getFeaturedBooks = async (): Promise<Book[]> => (await getBooks()).slice(0, 4);
@@ -55,8 +97,14 @@ export const getCategories = (books: Book[]): string[] => [...new Set(books.map(
 export const getBookById = async (id: string): Promise<Book | undefined> => {
   const numericId = Number(id);
   if (Number.isNaN(numericId)) return undefined;
-  const book = await request<ApiBookResponse>(`/api/book/${numericId}`);
-  return mapBookDetails(book);
+
+  const [book, reviews] = await Promise.all([
+    request<ApiBookResponse>(`/api/book/${numericId}`),
+    request<ApiReview[]>(`/api/reviews/by-book/${numericId}`),
+  ]);
+
+  const ratings = getBookRatings(reviews);
+  return mapBookDetails(book, ratings);
 };
 
 export const filterBooks = (books: Book[], filter: BookFilter): Book[] => {
