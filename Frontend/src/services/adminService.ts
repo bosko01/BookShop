@@ -16,6 +16,21 @@ interface ApiBookListResponse {
   id: number;
 }
 
+
+interface ApiAdminAnalytics {
+  totalSales: number;
+  orders: number;
+  books: number;
+  customers: number;
+}
+
+export interface AdminAnalytics {
+  totalSales: number;
+  orders: number;
+  books: number;
+  customers: number;
+}
+
 const toOrder = (order: ApiOrder): Order => ({
   id: `ORD-${order.id}`,
   customer: `User #${order.userId}`,
@@ -105,4 +120,8 @@ export const updateOrderStatus = async (token: string, id: string, status: Order
     method: 'PATCH',
     token,
   });
+};
+
+export const getAdminAnalytics = async (token: string): Promise<AdminAnalytics> => {
+  return request<ApiAdminAnalytics>('/api/admin/analytics', { token });
 };
