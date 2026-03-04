@@ -13,6 +13,7 @@ import MyOrdersPage from '../pages/MyOrdersPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminBooksPage from '../pages/admin/AdminBooksPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
+import AdminEntitiesPage from '../pages/admin/AdminEntitiesPage';
 import { useAuth } from '../state/auth/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 
@@ -56,6 +57,7 @@ export const router = createBrowserRouter([
       { index: true, element: <AdminDashboardPage /> },
       { path: 'books', element: <AdminBooksPage /> },
       { path: 'orders', element: <AdminOrdersPage /> },
+      { path: 'entities', element: <AdminEntitiesPage /> },
     ],
   },
 ]);

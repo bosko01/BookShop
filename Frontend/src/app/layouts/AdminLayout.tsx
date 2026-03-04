@@ -1,10 +1,11 @@
-import { LayoutDashboard, Package, ShoppingBag } from 'lucide-react';
+import { Boxes, LayoutDashboard, Package, ShoppingBag } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
 const links = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/books', label: 'Books', icon: Package },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+  { to: '/admin/entities', label: 'Entities', icon: Boxes },
 ];
 
 export const AdminLayout = () => (
