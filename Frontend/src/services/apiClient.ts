@@ -71,5 +71,9 @@ export const request = async <T>(path: string, options: RequestOptions = {}): Pr
     throw new Error(`HTTP ${response.status}`);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return (await response.json()) as T;
 };

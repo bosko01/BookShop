@@ -43,7 +43,7 @@ const AdminOrdersPage = () => {
                 onChange={async (e) => {
                   if (!accessToken) return;
                   await updateOrderStatus(accessToken, order.id, e.target.value as OrderStatus);
-                  await loadOrders();
+                  window.location.reload();
                 }}
                 className="rounded-xl border border-slate-200 px-2 py-1 text-xs"
               >

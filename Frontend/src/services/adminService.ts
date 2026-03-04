@@ -24,6 +24,34 @@ interface ApiAdminAnalytics {
   customers: number;
 }
 
+export interface AdminGenre {
+  id: number;
+  name: string;
+}
+
+export interface AdminBinding {
+  id: number;
+  name: string;
+}
+
+export interface AdminPublisher {
+  id: number;
+  name: string;
+  country?: string | null;
+  address?: string | null;
+  city?: string | null;
+  phoneNumber?: string | null;
+}
+
+export interface AdminUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'Customer' | 'Admin';
+  createdAtUtc: string;
+}
+
 export interface AdminAnalytics {
   totalSales: number;
   orders: number;
@@ -124,4 +152,103 @@ export const updateOrderStatus = async (token: string, id: string, status: Order
 
 export const getAdminAnalytics = async (token: string): Promise<AdminAnalytics> => {
   return request<ApiAdminAnalytics>('/api/admin/analytics', { token });
+};
+
+export const getAdminGenres = async (): Promise<AdminGenre[]> => {
+  return request<AdminGenre[]>('/api/genres');
+};
+
+export const createAdminGenre = async (token: string, name: string): Promise<void> => {
+  await request('/api/genres', { method: 'POST', token, body: { name } });
+};
+
+export const updateAdminGenre = async (token: string, id: number, name: string): Promise<void> => {
+  await request(`/api/genres/${id}`, { method: 'PUT', token, body: { name } });
+};
+
+export const deleteAdminGenre = async (token: string, id: number): Promise<void> => {
+  await request(`/api/genres/${id}`, { method: 'DELETE', token });
+};
+
+export const getAdminBindings = async (): Promise<AdminBinding[]> => {
+  return request<AdminBinding[]>('/api/bindings');
+};
+
+export const createAdminBinding = async (token: string, name: string): Promise<void> => {
+  await request('/api/bindings', { method: 'POST', token, body: { name } });
+};
+
+export const updateAdminBinding = async (token: string, id: number, name: string): Promise<void> => {
+  await request(`/api/bindings/${id}`, { method: 'PUT', token, body: { name } });
+};
+
+export const deleteAdminBinding = async (token: string, id: number): Promise<void> => {
+  await request(`/api/bindings/${id}`, { method: 'DELETE', token });
+};
+
+export const getAdminPublishers = async (): Promise<AdminPublisher[]> => {
+  return request<AdminPublisher[]>('/api/publishers');
+};
+
+export const createAdminPublisher = async (token: string, publisher: Pick<AdminPublisher, 'name' | 'country'>): Promise<void> => {
+  await request('/api/publishers', {
+    method: 'POST',
+    token,
+    body: {
+      name: publisher.name,
+      country: publisher.country ?? null,
+      address: null,
+      city: null,
+      phoneNumber: null,
+    },
+  });
+};
+
+export const updateAdminPublisher = async (token: string, id: number, publisher: Pick<AdminPublisher, 'name' | 'country'>): Promise<void> => {
+  await request(`/api/publishers/${id}`, {
+    method: 'PUT',
+    token,
+    body: {
+      name: publisher.name,
+      country: publisher.country ?? null,
+      address: null,
+      city: null,
+      phoneNumber: null,
+    },
+  });
+};
+
+export const deleteAdminPublisher = async (token: string, id: number): Promise<void> => {
+  await request(`/api/publishers/${id}`, { method: 'DELETE', token });
+};
+
+export const getAdminUsers = async (token: string): Promise<AdminUser[]> => {
+  return request<AdminUser[]>('/api/users', { token });
+};
+
+export const createAdminUser = async (
+  token: string,
+  payload: Pick<AdminUser, 'firstName' | 'lastName' | 'email' | 'role'> & { password: string },
+): Promise<void> => {
+  await request('/api/users', {
+    method: 'POST',
+    token,
+    body: payload,
+  });
+};
+
+export const updateAdminUser = async (
+  token: string,
+  id: number,
+  payload: Pick<AdminUser, 'firstName' | 'lastName' | 'email'>,
+): Promise<void> => {
+  await request(`/api/users/${id}`, {
+    method: 'PUT',
+    token,
+    body: payload,
+  });
+};
+
+export const deleteAdminUser = async (token: string, id: number): Promise<void> => {
+  await request(`/api/users/${id}`, { method: 'DELETE', token });
 };

@@ -38,7 +38,7 @@ const AdminBooksPage = () => {
             <td className="px-4 py-3">
               <div className="flex gap-2">
                 <button onClick={() => { setEditing(book); setOpen(true); }} className="rounded-lg bg-slate-100 px-3 py-1 text-xs">Edit</button>
-                <button onClick={async () => { if (accessToken) { await deleteAdminBook(accessToken, book.id); await loadBooks(); } }} className="rounded-lg bg-red-50 px-3 py-1 text-xs text-red-600">Delete</button>
+                <button onClick={async () => { if (accessToken) { await deleteAdminBook(accessToken, book.id); window.location.reload(); } }} className="rounded-lg bg-red-50 px-3 py-1 text-xs text-red-600">Delete</button>
               </div>
             </td>
           </tr>
@@ -55,7 +55,7 @@ const AdminBooksPage = () => {
           } else {
             await createAdminBook(accessToken, values);
           }
-          await loadBooks();
+          window.location.reload();
         }}
       />
     </div>
