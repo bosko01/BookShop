@@ -23,6 +23,11 @@ interface ApiBookResponse extends ApiBookListResponse {
   imageUrl?: string | null;
 }
 
+interface ApiGenreResponse {
+  id: number;
+  name: string;
+}
+
 interface ApiReview {
   id: number;
   bookId: number;
@@ -56,7 +61,7 @@ const getBookRatings = (reviews: ApiReview[]): Map<number, BookRating> => {
   );
 };
 
-const mapBookList = (book: ApiBookListResponse, ratings?: Map<number, BookRating>, author?: string): Book => {
+const mapBookList = (book: ApiBookListResponse, ratings?: Map<number, BookRating>, author?: string, category?: string): Book => {
   const bookRating = ratings?.get(book.id);
 
   return {
@@ -67,7 +72,7 @@ const mapBookList = (book: ApiBookListResponse, ratings?: Map<number, BookRating
   shortDescription: book.title,
   price: book.price,
   year: new Date().getFullYear(),
-  category: 'Fiction',
+  category: category ?? 'Fiction',
   stock: book.quantityInStock,
   rating: bookRating?.rating ?? 0,
   reviewsCount: bookRating?.reviewsCount ?? 0,
@@ -94,6 +99,9 @@ export const getBooks = async (): Promise<Book[]> => {
 
   const ratings = getBookRatings(reviews);
 
+  const genres = await request<ApiGenreResponse[]>('/api/genres');
+  const genreById = new Map(genres.map((genre) => [genre.id, genre.name]));
+
   const detailedBooks = await Promise.all(
     books.map(async (book) => {
       const details = await request<ApiBookResponse>(`/api/book/${book.id}`);
@@ -101,11 +109,12 @@ export const getBooks = async (): Promise<Book[]> => {
       return {
         book,
         author: `${author.firstName} ${author.lastName}`,
+        category: genreById.get(details.genreId) ?? 'Fiction',
       };
     }),
   );
 
-  return detailedBooks.map(({ book, author }) => mapBookList(book, ratings, author));
+  return detailedBooks.map(({ book, author, category }) => mapBookList(book, ratings, author, category));
 };
 
 export const getFeaturedBooks = async (): Promise<Book[]> => (await getBooks()).slice(0, 4);
