@@ -6,7 +6,7 @@ import { ShopToolbar } from '../components/shop/ShopToolbar';
 import { SidebarFilters } from '../components/shop/SidebarFilters';
 import { filterBooks, getBooks, getCategories } from '../services/bookService';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 
 const ShopPage = () => {
   const [params] = useSearchParams();
