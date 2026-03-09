@@ -2,59 +2,76 @@ using BookShop.Application.Interfaces.Payments;
 using BookShop.Application.Interfaces.Persistence;
 using BookShop.Application.Interfaces.Persistence.Common;
 using BookShop.Application.Payment.Contracts;
+using Microsoft.Extensions.Logging;
 
 namespace BookShop.Application.Payment.Services;
 
 public sealed class PaymentWebhookService : IPaymentWebhookService
 {
     private const string CardPaymentMethodName = "Card";
-    private static readonly TimeSpan[] OrderLookupRetryDelays =
-    [
-        TimeSpan.FromMilliseconds(250),
-        TimeSpan.FromMilliseconds(500),
-        TimeSpan.FromSeconds(1),
-        TimeSpan.FromSeconds(2),
-        TimeSpan.FromSeconds(3)
-    ];
-
     private readonly IStripeWebhookEventParser _stripeWebhookEventParser;
     private readonly IOrderRepository _orderRepository;
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPaymentMethodRepository _paymentMethodRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<PaymentWebhookService> _logger;
 
     public PaymentWebhookService(
         IStripeWebhookEventParser stripeWebhookEventParser,
         IOrderRepository orderRepository,
         IInvoiceRepository invoiceRepository,
         IPaymentMethodRepository paymentMethodRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<PaymentWebhookService> logger)
     {
         _stripeWebhookEventParser = stripeWebhookEventParser;
         _orderRepository = orderRepository;
         _invoiceRepository = invoiceRepository;
         _paymentMethodRepository = paymentMethodRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task HandleStripeWebhookAsync(string payload, string signatureHeader, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Stripe webhook processing started.");
+
         var eventData = _stripeWebhookEventParser.Parse(payload, signatureHeader);
+        _logger.LogInformation("Stripe webhook event parsed. EventType={EventType}.", eventData.EventType);
 
-        if (!eventData.IsSuccessfulPaymentEvent || eventData.OrderId is null)
+        if (!eventData.IsCheckoutSessionCompleted)
+        {
+            _logger.LogInformation("Ignoring Stripe event {EventType}. Only checkout.session.completed is processed.", eventData.EventType);
             return;
+        }
 
-        var order = await WaitForOrderAsync(eventData.OrderId.Value, cancellationToken);
+        if (eventData.OrderId is null)
+        {
+            _logger.LogWarning("checkout.session.completed event does not contain order id. EventType={EventType}", eventData.EventType);
+            return;
+        }
+
+        _logger.LogInformation("Order lookup started. OrderId={OrderId}.", eventData.OrderId.Value);
+        var order = await _orderRepository.GetByIdAsync(eventData.OrderId.Value, cancellationToken);
         if (order is null)
-            throw new InvalidOperationException($"Order with id '{eventData.OrderId.Value}' is not available yet. Webhook processing will be retried.");
+        {
+            _logger.LogWarning("Order not found during webhook processing. OrderId={OrderId}. Webhook will return success to avoid Stripe timeout.", eventData.OrderId.Value);
+            return;
+        }
+
+        _logger.LogInformation("Order found. OrderId={OrderId}. Starting invoice processing.", order.Id);
 
         var invoice = await _invoiceRepository.GetByOrderIdAsync(order.Id, cancellationToken);
         if (invoice is null)
         {
             var paymentMethod = await _paymentMethodRepository.GetByNameAsync(CardPaymentMethodName, cancellationToken);
             if (paymentMethod is null)
+            {
+                _logger.LogWarning("Payment method '{PaymentMethodName}' was not found. Invoice generation skipped for OrderId={OrderId}.", CardPaymentMethodName, order.Id);
                 return;
+            }
 
+            _logger.LogInformation("Invoice generation started. OrderId={OrderId}.", order.Id);
             invoice = Domain.Entities.Invoice.Create(order.Id, paymentMethod.Id, order.TotalAmount, "Stripe");
             await _invoiceRepository.AddAsync(invoice, cancellationToken);
         }
@@ -62,23 +79,7 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         order.MarkAsPaid();
         invoice.MarkAsPaid(DateTime.UtcNow, eventData.ProviderReference);
         await _unitOfWork.SaveAsync(cancellationToken);
-    }
 
-    private async Task<Domain.Entities.Order?> WaitForOrderAsync(int orderId, CancellationToken cancellationToken)
-    {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
-        if (order is not null)
-            return order;
-
-        foreach (var delay in OrderLookupRetryDelays)
-        {
-            await Task.Delay(delay, cancellationToken);
-
-            order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
-            if (order is not null)
-                return order;
-        }
-
-        return null;
+        _logger.LogInformation("Stripe webhook processing finished. OrderId={OrderId}.", order.Id);
     }
 }

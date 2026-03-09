@@ -8,7 +8,6 @@ namespace BookShop.Infrastructure.Payments;
 
 public sealed class StripeWebhookEventParser : IStripeWebhookEventParser
 {
-    private const string PaymentIntentSucceeded = "payment_intent.succeeded";
     private const string CheckoutSessionCompleted = "checkout.session.completed";
 
     private readonly string _webhookSecret;
@@ -25,20 +24,14 @@ public sealed class StripeWebhookEventParser : IStripeWebhookEventParser
 
         return stripeEvent.Type switch
         {
-            PaymentIntentSucceeded => ParsePaymentIntentEvent(stripeEvent.Data.Object as PaymentIntent),
             CheckoutSessionCompleted => ParseCheckoutSessionEvent(stripeEvent.Data.Object as Session),
-            _ => new StripeWebhookEventData(false, null, null)
+            _ => new StripeWebhookEventData(stripeEvent.Type, false, null, null)
         };
     }
 
-    private static StripeWebhookEventData ParsePaymentIntentEvent(PaymentIntent? paymentIntent)
-        => new(
-            true,
-            TryGetOrderId(paymentIntent?.Metadata),
-            paymentIntent?.Id);
-
     private static StripeWebhookEventData ParseCheckoutSessionEvent(Session? session)
         => new(
+            CheckoutSessionCompleted,
             true,
             GetCheckoutOrderId(session),
             session?.PaymentIntentId ?? session?.Id);

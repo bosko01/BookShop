@@ -4,6 +4,7 @@ using BookShop.Application.Interfaces.Payments;
 using BookShop.Application.Payment.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace BookShop.API.Controllers;
 
@@ -13,11 +14,13 @@ public sealed class PaymentController : ControllerBase
 {
     private readonly IPaymentWebhookService _paymentWebhookService;
     private readonly IStripeCheckoutService _stripeCheckoutService;
+    private readonly ILogger<PaymentController> _logger;
 
-    public PaymentController(IPaymentWebhookService paymentWebhookService, IStripeCheckoutService stripeCheckoutService)
+    public PaymentController(IPaymentWebhookService paymentWebhookService, IStripeCheckoutService stripeCheckoutService, ILogger<PaymentController> logger)
     {
         _paymentWebhookService = paymentWebhookService;
         _stripeCheckoutService = stripeCheckoutService;
+        _logger = logger;
     }
 
     [HttpPost("checkout-session")]
@@ -39,11 +42,15 @@ public sealed class PaymentController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> StripeWebhook(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Stripe webhook request received. Path={Path}", Request.Path);
+
         using var reader = new StreamReader(Request.Body, Encoding.UTF8);
         var payload = await reader.ReadToEndAsync(cancellationToken);
         var signature = Request.Headers["Stripe-Signature"].ToString();
 
         await _paymentWebhookService.HandleStripeWebhookAsync(payload, signature, cancellationToken);
+
+        _logger.LogInformation("Stripe webhook response returned with HTTP 200.");
         return Ok();
     }
 }
