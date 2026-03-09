@@ -4,7 +4,7 @@ import { Book } from '../../types/book';
 interface BookFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: { title: string; author: string; price: number; stock: number; category: Book['category'] }) => void;
+  onSubmit: (values: { title: string; author: string; price: number; stock: number; category: Book['category']; image: string }) => void;
   initial?: Book | null;
 }
 
@@ -14,6 +14,7 @@ export const BookFormModal = ({ open, onClose, onSubmit, initial }: BookFormModa
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
   const [category, setCategory] = useState<Book['category']>('Fiction');
+  const [image, setImage] = useState('');
 
   useEffect(() => {
     if (initial) {
@@ -22,6 +23,7 @@ export const BookFormModal = ({ open, onClose, onSubmit, initial }: BookFormModa
       setPrice(String(initial.price));
       setStock(String(initial.stock));
       setCategory(initial.category);
+      setImage(initial.image);
       return;
     }
     setTitle('');
@@ -29,6 +31,7 @@ export const BookFormModal = ({ open, onClose, onSubmit, initial }: BookFormModa
     setPrice('');
     setStock('');
     setCategory('Fiction');
+    setImage('');
   }, [initial, open]);
 
   if (!open) return null;
@@ -39,7 +42,7 @@ export const BookFormModal = ({ open, onClose, onSubmit, initial }: BookFormModa
         className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit({ title, author, price: Number(price), stock: Number(stock), category });
+          onSubmit({ title, author, price: Number(price), stock: Number(stock), category, image });
           onClose();
         }}
       >
@@ -52,6 +55,7 @@ export const BookFormModal = ({ open, onClose, onSubmit, initial }: BookFormModa
           <select value={category} onChange={(e) => setCategory(e.target.value as Book['category'])} className="rounded-xl border border-slate-200 px-4 py-2 sm:col-span-2">
             <option>Fiction</option><option>Science</option><option>Biography</option><option>Technology</option><option>History</option>
           </select>
+          <input value={image} onChange={(e) => setImage(e.target.value)} placeholder="Image path/link (e.g. /images/books/book1.jpg)" className="rounded-xl border border-slate-200 px-4 py-2 sm:col-span-2" />
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="rounded-xl bg-slate-100 px-4 py-2">Cancel</button>
