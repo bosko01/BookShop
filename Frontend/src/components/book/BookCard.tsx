@@ -4,7 +4,9 @@ import { RatingStars } from './RatingStars';
 
 export const BookCard = ({ book }: { book: Book }) => (
   <article className="rounded-2xl bg-white p-4 shadow-md transition hover:shadow-lg">
-    <img src={book.image} alt={book.title} className="h-52 w-full rounded-xl object-cover" />
+    <div className="flex h-52 w-full items-center justify-center overflow-hidden rounded-xl bg-brand-50">
+      <img src={book.image} alt={book.title} className="h-full w-full object-contain" />
+    </div>
     <div className="mt-4 space-y-2">
       <p className="text-xs font-medium text-slate-500">{book.author}</p>
       <h3 className="line-clamp-1 text-lg font-semibold text-slate-900">{book.title}</h3>
