@@ -77,7 +77,7 @@ export const getAdminBooks = async (): Promise<Book[]> => {
 
 export const createAdminBook = async (
   token: string,
-  book: Omit<Book, 'id' | 'rating' | 'reviewsCount' | 'description' | 'shortDescription' | 'year' | 'image'>,
+  book: Omit<Book, 'id' | 'rating' | 'reviewsCount' | 'description' | 'shortDescription' | 'year'>,
 ): Promise<void> => {
   await request<number>('/api/book', {
     method: 'POST',
@@ -85,7 +85,7 @@ export const createAdminBook = async (
     body: {
       title: book.title,
       description: `${book.title} by ${book.author}`,
-      imageUrl: null,
+      imageUrl: book.image || null,
       pageCount: 100,
       price: book.price,
       quantityInStock: book.stock,
