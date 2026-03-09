@@ -1,3 +1,3 @@
 namespace BookShop.Application.Payment.Contracts;
 
-public sealed record StripeWebhookEventData(bool IsSuccessfulPaymentEvent, int? OrderId, string? ProviderReference);
+public sealed record StripeWebhookEventData(string EventType, bool IsCheckoutSessionCompleted, int? OrderId, string? ProviderReference);
