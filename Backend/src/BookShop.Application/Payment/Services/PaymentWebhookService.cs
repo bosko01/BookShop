@@ -8,6 +8,14 @@ namespace BookShop.Application.Payment.Services;
 public sealed class PaymentWebhookService : IPaymentWebhookService
 {
     private const string CardPaymentMethodName = "Card";
+    private static readonly TimeSpan[] OrderLookupRetryDelays =
+    [
+        TimeSpan.FromMilliseconds(250),
+        TimeSpan.FromMilliseconds(500),
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(3)
+    ];
 
     private readonly IStripeWebhookEventParser _stripeWebhookEventParser;
     private readonly IOrderRepository _orderRepository;
@@ -36,11 +44,9 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         if (!eventData.IsSuccessfulPaymentEvent || eventData.OrderId is null)
             return;
 
-        await Task.Delay(2000, cancellationToken);
-
-        var order = await _orderRepository.GetByIdAsync(eventData.OrderId.Value, cancellationToken);
+        var order = await WaitForOrderAsync(eventData.OrderId.Value, cancellationToken);
         if (order is null)
-            return;
+            throw new InvalidOperationException($"Order with id '{eventData.OrderId.Value}' is not available yet. Webhook processing will be retried.");
 
         var invoice = await _invoiceRepository.GetByOrderIdAsync(order.Id, cancellationToken);
         if (invoice is null)
@@ -56,5 +62,23 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         order.MarkAsPaid();
         invoice.MarkAsPaid(DateTime.UtcNow, eventData.ProviderReference);
         await _unitOfWork.SaveAsync(cancellationToken);
+    }
+
+    private async Task<Domain.Entities.Order?> WaitForOrderAsync(int orderId, CancellationToken cancellationToken)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        if (order is not null)
+            return order;
+
+        foreach (var delay in OrderLookupRetryDelays)
+        {
+            await Task.Delay(delay, cancellationToken);
+
+            order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+            if (order is not null)
+                return order;
+        }
+
+        return null;
     }
 }
