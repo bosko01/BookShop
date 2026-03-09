@@ -60,6 +60,7 @@ export interface AdminAnalytics {
 }
 
 const toOrder = (order: ApiOrder): Order => ({
+  orderId: order.id,
   id: `ORD-${order.id}`,
   customer: `User #${order.userId}`,
   date: new Date(order.createdAtUtc).toISOString().slice(0, 10),

@@ -30,11 +30,13 @@ const toOrderStatus = (status: ApiOrder['status']): OrderStatus => {
 };
 
 const toOrder = (order: ApiOrder): Order => ({
+  orderId: order.id,
   id: `ORD-${order.id}`,
   customer: `User #${order.userId}`,
   date: new Date(order.createdAtUtc).toISOString().slice(0, 10),
   total: order.totalAmount,
   items: order.items?.length ?? order.itemCount,
+  invoiceNumber: undefined,
   status: toOrderStatus(order.status),
 });
 
