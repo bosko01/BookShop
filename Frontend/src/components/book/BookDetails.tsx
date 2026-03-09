@@ -8,7 +8,10 @@ interface BookDetailsProps {
   onAddToCart: () => void;
 }
 
-export const BookDetails = ({ book, quantity, onQuantityChange, onAddToCart }: BookDetailsProps) => (
+export const BookDetails = ({ book, quantity, onQuantityChange, onAddToCart }: BookDetailsProps) => {
+  console.log("DETAIL book:", book);
+
+  return (
   <section className="grid gap-8 rounded-2xl bg-white p-6 shadow-md lg:grid-cols-2">
     <img src={book.image} alt={book.title} className="h-[420px] w-full rounded-xl object-cover" />
     <div className="space-y-4">
@@ -32,4 +35,6 @@ export const BookDetails = ({ book, quantity, onQuantityChange, onAddToCart }: B
       </div>
     </div>
   </section>
-);
+
+  );
+};

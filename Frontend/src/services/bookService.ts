@@ -6,6 +6,7 @@ interface ApiBookListResponse {
   title: string;
   price: number;
   quantityInStock: number;
+  imageUrl?: string | null;
 }
 
 interface ApiAuthorResponse {
@@ -76,7 +77,7 @@ const mapBookList = (book: ApiBookListResponse, ratings?: Map<number, BookRating
   stock: book.quantityInStock,
   rating: bookRating?.rating ?? 0,
   reviewsCount: bookRating?.reviewsCount ?? 0,
-  image: 'https://placehold.co/600x800/e2e8f0/334155?text=Book',
+  image: book.imageUrl ?? 'https://placehold.co/600x800/e2e8f0/334155?text=Book',
   featured: false,
   };
 };

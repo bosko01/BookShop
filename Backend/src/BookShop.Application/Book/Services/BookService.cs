@@ -169,7 +169,8 @@ public sealed class BookService : IBookService
             book.Id,
             book.Title,
             book.Price,
-            book.QuantityInStock);
+            book.QuantityInStock,
+            book.ImageUrl);
 
     public async Task<IReadOnlyList<BookListResponse>> GetByAuthorIdAsync(
     int authorId,
