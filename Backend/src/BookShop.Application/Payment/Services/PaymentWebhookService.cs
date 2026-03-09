@@ -36,6 +36,8 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         if (!eventData.IsSuccessfulPaymentEvent || eventData.OrderId is null)
             return;
 
+        await Task.Delay(2000, cancellationToken);
+
         var order = await _orderRepository.GetByIdAsync(eventData.OrderId.Value, cancellationToken);
         if (order is null)
             return;
