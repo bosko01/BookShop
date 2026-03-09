@@ -8,7 +8,16 @@ export const Footer = () => (
       <div>
         <h5 className="font-semibold text-slate-800">Quick Links</h5>
         <ul className="mt-2 space-y-2 text-sm text-slate-500">
-          <li>Shop</li><li>About</li><li>Contact</li>
+          <li>
+            <a
+              href="https://rs.linkedin.com/in/bosko-vujanovic"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-brand-500"
+            >
+              Contact
+            </a>
+          </li>
         </ul>
       </div>
     </div>
