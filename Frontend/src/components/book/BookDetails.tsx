@@ -13,7 +13,9 @@ export const BookDetails = ({ book, quantity, onQuantityChange, onAddToCart }: B
 
   return (
   <section className="grid gap-8 rounded-2xl bg-white p-6 shadow-md lg:grid-cols-2">
-    <img src={book.image} alt={book.title} className="h-[420px] w-full rounded-xl object-cover" />
+    <div className="flex h-[420px] w-full items-center justify-center overflow-hidden rounded-xl bg-brand-50">
+      <img src={book.image} alt={book.title} className="h-full w-full object-contain" />
+    </div>
     <div className="space-y-4">
       <span className="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-brand-600">{book.category}</span>
       <h1 className="text-3xl font-bold text-slate-900">{book.title}</h1>
