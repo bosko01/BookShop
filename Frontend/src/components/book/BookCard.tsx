@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom';
 import { Book } from '../../types/book';
 import { RatingStars } from './RatingStars';
 
-export const BookCard = ({ book }: { book: Book }) => (
+export const BookCard = ({ book }: { book: Book }) => {
+  console.log("CARD book:", book);
+
+  return (
   <article className="rounded-2xl bg-white p-4 shadow-md transition hover:shadow-lg">
     <div className="flex h-52 w-full items-center justify-center overflow-hidden rounded-xl bg-brand-50">
       <img src={book.image} alt={book.title} className="h-full w-full object-contain" />
@@ -19,4 +22,6 @@ export const BookCard = ({ book }: { book: Book }) => (
       </div>
     </div>
   </article>
-);
+
+  );
+};
