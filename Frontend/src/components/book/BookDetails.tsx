@@ -1,5 +1,6 @@
 import { Book } from '../../types/book';
 import { RatingStars } from './RatingStars';
+import { formatCurrency } from '../../utils/currency';
 
 interface BookDetailsProps {
   book: Book;
@@ -21,7 +22,7 @@ export const BookDetails = ({ book, quantity, onQuantityChange, onAddToCart }: B
       <h1 className="text-3xl font-bold text-slate-900">{book.title}</h1>
       <p className="text-slate-500">by {book.author}</p>
       <RatingStars rating={book.rating} />
-      <p className="text-3xl font-bold text-brand-500">${book.price.toFixed(2)}</p>
+      <p className="text-3xl font-bold text-brand-500">{formatCurrency(book.price)}</p>
       <p className="text-slate-600">{book.shortDescription}</p>
       <div className="flex items-center gap-3">
         <input

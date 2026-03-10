@@ -4,6 +4,7 @@ import { getAdminOrders, updateOrderStatus } from '../../services/adminService';
 import { useAuth } from '../../state/auth/AuthContext';
 import { Order } from '../../types/order';
 import { OrderStatus } from '../../types/order';
+import { formatCurrency } from '../../utils/currency';
 
 const statuses: OrderStatus[] = ['Created', 'Paid', 'Shipped', 'Delivered', 'Cancelled'];
 
@@ -35,7 +36,7 @@ const AdminOrdersPage = () => {
             <td className="px-4 py-3 font-medium">{order.id}</td>
             <td className="px-4 py-3">{order.customer}</td>
             <td className="px-4 py-3">{order.items}</td>
-            <td className="px-4 py-3">${order.total.toFixed(2)}</td>
+            <td className="px-4 py-3">{formatCurrency(order.total)}</td>
             <td className="px-4 py-3">{order.date}</td>
             <td className="px-4 py-3">
               <select

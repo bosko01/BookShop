@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/currency';
 interface AdminStats {
   totalSales: number;
   orders: number;
@@ -7,7 +8,7 @@ interface AdminStats {
 
 export const StatCards = ({ stats }: { stats: AdminStats }) => {
   const cards = [
-    { label: 'Total Sales', value: `$${stats.totalSales.toFixed(2)}` },
+    { label: 'Total Sales', value: formatCurrency(stats.totalSales) },
     { label: 'Orders', value: stats.orders.toString() },
     { label: 'Books', value: stats.books.toString() },
     { label: 'Customers', value: stats.customers.toString() },

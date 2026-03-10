@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { getInvoiceByOrderId, getOrderDetails, InvoiceDetails, OrderDetails } from '../services/checkoutService';
 import { useAuth } from '../state/auth/AuthContext';
 import { useCart } from '../state/cart/CartContext';
+import { formatCurrency } from '../utils/currency';
 
 const CheckoutSuccessPage = () => {
   const { accessToken } = useAuth();
@@ -90,13 +91,13 @@ const CheckoutSuccessPage = () => {
             <li key={item.orderItemId} className="rounded-xl border border-slate-200 p-3 text-sm text-slate-700">
               <div className="font-medium">{item.bookTitle}</div>
               <div>Količina: {item.quantity}</div>
-              <div>Cena: ${item.unitPrice.toFixed(2)}</div>
+              <div>Cena: {formatCurrency(item.unitPrice)}</div>
             </li>
           ))}
         </ul>
       </div>
 
-      <p className="text-slate-700">Ukupno: <span className="font-semibold">${order.totalAmount.toFixed(2)}</span></p>
+      <p className="text-slate-700">Ukupno: <span className="font-semibold">{formatCurrency(order.totalAmount)}</span></p>
       <Link to="/shop" className="inline-flex rounded-xl bg-brand-500 px-4 py-2 font-semibold text-white hover:bg-brand-600">Nastavi kupovinu</Link>
     </section>
   );

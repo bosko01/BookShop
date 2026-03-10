@@ -8,6 +8,11 @@ namespace BookShop.Infrastructure.Payments;
 
 public sealed class StripeCheckoutService : IStripeCheckoutService
 {
+    private static readonly HashSet<string> ZeroDecimalCurrencies = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf", "rsd"
+    };
+
     private readonly SessionService _sessionService;
 
     public StripeCheckoutService(IConfiguration configuration)
@@ -37,7 +42,7 @@ public sealed class StripeCheckoutService : IStripeCheckoutService
                     PriceData = new SessionLineItemPriceDataOptions
                     {
                         Currency = request.Currency.ToLowerInvariant(),
-                        UnitAmount = (long)Math.Round(request.Amount * 100, MidpointRounding.AwayFromZero),
+                        UnitAmount = ConvertAmountToMinorUnit(request.Amount, request.Currency),
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = $"BookShop order #{request.OrderId}"
@@ -56,5 +61,13 @@ public sealed class StripeCheckoutService : IStripeCheckoutService
 
         var session = await _sessionService.CreateAsync(options, cancellationToken: cancellationToken);
         return new StripeCheckoutSessionResponse(session.Id, session.Url ?? string.Empty);
+    }
+
+    private static long ConvertAmountToMinorUnit(decimal amount, string currency)
+    {
+        if (ZeroDecimalCurrencies.Contains(currency))
+            return (long)Math.Round(amount, MidpointRounding.AwayFromZero);
+
+        return (long)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
     }
 }

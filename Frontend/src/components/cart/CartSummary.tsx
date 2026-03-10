@@ -1,3 +1,5 @@
+import { formatCurrency } from '../../utils/currency';
+
 interface CartSummaryProps {
   subtotal: number;
   onCheckout: () => Promise<void>;
@@ -11,8 +13,8 @@ export const CartSummary = ({ subtotal, onCheckout, isCheckoutLoading, checkoutE
     <aside className="rounded-2xl bg-white p-5 shadow-md">
       <h3 className="text-xl font-bold text-slate-900">Order Summary</h3>
       <div className="mt-4 space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-        <div className="mt-2 flex justify-between border-t border-slate-200 pt-3 font-semibold text-slate-900"><span>Total</span><span className="text-brand-500">${total.toFixed(2)}</span></div>
+        <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
+        <div className="mt-2 flex justify-between border-t border-slate-200 pt-3 font-semibold text-slate-900"><span>Total</span><span className="text-brand-500">{formatCurrency(total)}</span></div>
       </div>
       {checkoutError ? <p className="mt-3 text-sm text-red-500">{checkoutError}</p> : null}
       <button
