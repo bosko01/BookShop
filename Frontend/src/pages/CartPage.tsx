@@ -46,7 +46,7 @@ const CartPage = () => {
         orderId,
         userId,
         amount: total,
-        currency: 'usd',
+        currency: 'rsd',
         successUrl: `${window.location.origin}/checkout/success?orderId=${orderId}`,
         cancelUrl: `${window.location.origin}/cart?payment=cancelled`,
       });

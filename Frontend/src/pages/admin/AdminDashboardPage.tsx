@@ -4,6 +4,7 @@ import { StatCards } from '../../components/admin/StatCards';
 import { AdminAnalytics, getAdminAnalytics, getAdminOrders } from '../../services/adminService';
 import { useAuth } from '../../state/auth/AuthContext';
 import { Order } from '../../types/order';
+import { formatCurrency } from '../../utils/currency';
 
 const emptyStats: AdminAnalytics = {
   totalSales: 0,
@@ -74,7 +75,7 @@ const AdminDashboardPage = () => {
                   <td className="px-4 py-3 font-medium">{order.id}</td>
                   <td className="px-4 py-3">{order.customer}</td>
                   <td className="px-4 py-3">{order.date}</td>
-                  <td className="px-4 py-3">${order.total.toFixed(2)}</td>
+                  <td className="px-4 py-3">{formatCurrency(order.total)}</td>
                   <td className="px-4 py-3">{order.status}</td>
                 </tr>
               ))

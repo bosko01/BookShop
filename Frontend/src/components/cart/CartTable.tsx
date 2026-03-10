@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { CartItem } from '../../state/cart/cartStorage';
 import { QuantityInput } from './QuantityInput';
+import { formatCurrency } from '../../utils/currency';
 
 interface CartTableProps {
   items: CartItem[];
@@ -15,7 +16,7 @@ export const CartTable = ({ items, onQuantityChange, onRemove }: CartTableProps)
         <img src={item.book.image} alt={item.book.title} className="h-20 w-full rounded-xl object-cover" />
         <div>
           <h3 className="font-semibold text-slate-900">{item.book.title}</h3>
-          <p className="text-sm text-slate-500">${item.book.price.toFixed(2)}</p>
+          <p className="text-sm text-slate-500">{formatCurrency(item.book.price)}</p>
         </div>
         <QuantityInput value={item.quantity} onChange={(qty) => onQuantityChange(item.book.id, qty)} />
         <button onClick={() => onRemove(item.book.id)} className="justify-self-start rounded-xl p-2 text-red-500 hover:bg-red-50 sm:justify-self-end"><Trash2 size={18} /></button>

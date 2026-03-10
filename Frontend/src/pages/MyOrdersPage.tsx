@@ -4,6 +4,7 @@ import { getInvoiceByOrderId } from '../services/checkoutService';
 import { getMyOrders } from '../services/orderService';
 import { useAuth } from '../state/auth/AuthContext';
 import { Order } from '../types/order';
+import { formatCurrency } from '../utils/currency';
 
 const MyOrdersPage = () => {
   const { accessToken } = useAuth();
@@ -47,7 +48,7 @@ const MyOrdersPage = () => {
           <tr key={order.id} className="border-t border-slate-100">
             <td className="px-4 py-3 font-medium">{order.id}</td>
             <td className="px-4 py-3">{order.invoiceNumber ?? 'U pripremi...'}</td>
-            <td className="px-4 py-3">${order.total.toFixed(2)}</td>
+            <td className="px-4 py-3">{formatCurrency(order.total)}</td>
             <td className="px-4 py-3">{order.date}</td>
             <td className="px-4 py-3">{order.status}</td>
           </tr>

@@ -4,6 +4,7 @@ import { DataTable } from '../../components/admin/DataTable';
 import { createAdminBook, deleteAdminBook, getAdminBooks, updateAdminBook } from '../../services/adminService';
 import { useAuth } from '../../state/auth/AuthContext';
 import { Book } from '../../types/book';
+import { formatCurrency } from '../../utils/currency';
 
 const AdminBooksPage = () => {
   const { accessToken } = useAuth();
@@ -32,7 +33,7 @@ const AdminBooksPage = () => {
           <tr key={book.id} className="border-t border-slate-100">
             <td className="px-4 py-3 font-medium">{book.title}</td>
             <td className="px-4 py-3">{book.author}</td>
-            <td className="px-4 py-3">${book.price.toFixed(2)}</td>
+            <td className="px-4 py-3">{formatCurrency(book.price)}</td>
             <td className="px-4 py-3">{book.stock}</td>
             <td className="px-4 py-3">{book.category}</td>
             <td className="px-4 py-3">
