@@ -191,30 +191,37 @@ export const getAdminPublishers = async (): Promise<AdminPublisher[]> => {
   return request<AdminPublisher[]>('/api/publishers');
 };
 
-export const createAdminPublisher = async (token: string, publisher: Pick<AdminPublisher, 'name' | 'country'>): Promise<void> => {
+export const createAdminPublisher = async (
+  token: string,
+  publisher: Pick<AdminPublisher, 'name' | 'country' | 'address' | 'city' | 'phoneNumber'>,
+): Promise<void> => {
   await request('/api/publishers', {
     method: 'POST',
     token,
     body: {
       name: publisher.name,
       country: publisher.country ?? null,
-      address: null,
-      city: null,
-      phoneNumber: null,
+      address: publisher.address ?? null,
+      city: publisher.city ?? null,
+      phoneNumber: publisher.phoneNumber ?? null,
     },
   });
 };
 
-export const updateAdminPublisher = async (token: string, id: number, publisher: Pick<AdminPublisher, 'name' | 'country'>): Promise<void> => {
+export const updateAdminPublisher = async (
+  token: string,
+  id: number,
+  publisher: Pick<AdminPublisher, 'name' | 'country' | 'address' | 'city' | 'phoneNumber'>,
+): Promise<void> => {
   await request(`/api/publishers/${id}`, {
     method: 'PUT',
     token,
     body: {
       name: publisher.name,
       country: publisher.country ?? null,
-      address: null,
-      city: null,
-      phoneNumber: null,
+      address: publisher.address ?? null,
+      city: publisher.city ?? null,
+      phoneNumber: publisher.phoneNumber ?? null,
     },
   });
 };
@@ -247,6 +254,14 @@ export const updateAdminUser = async (
     method: 'PUT',
     token,
     body: payload,
+  });
+};
+
+export const updateAdminUserRole = async (token: string, id: number, role: AdminUser['role']): Promise<void> => {
+  await request(`/api/users/${id}/role`, {
+    method: 'PATCH',
+    token,
+    body: { role },
   });
 };
 
