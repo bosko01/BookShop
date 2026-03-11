@@ -52,7 +52,7 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         }
 
         _logger.LogInformation("Order lookup started. OrderId={OrderId}.", eventData.OrderId.Value);
-        var order = await _orderRepository.GetByIdAsync(eventData.OrderId.Value, cancellationToken);
+        var order = await _orderRepository.GetByIdWithItemsAsync(eventData.OrderId.Value, cancellationToken);
         if (order is null)
         {
             _logger.LogWarning("Order not found during webhook processing. OrderId={OrderId}. Webhook will return success to avoid Stripe timeout.", eventData.OrderId.Value);
@@ -74,6 +74,17 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
             _logger.LogInformation("Invoice generation started. OrderId={OrderId}.", order.Id);
             invoice = Domain.Entities.Invoice.Create(order.Id, paymentMethod.Id, order.TotalAmount, "Stripe");
             await _invoiceRepository.AddAsync(invoice, cancellationToken);
+        }
+
+        if (invoice.IsPaid)
+        {
+            _logger.LogInformation("Invoice is already paid. Duplicate webhook ignored. OrderId={OrderId}, InvoiceId={InvoiceId}.", order.Id, invoice.Id);
+            return;
+        }
+
+        foreach (var item in order.Items)
+        {
+            item.Book.DecrementStock(item.Quantity);
         }
 
         order.MarkAsPaid();
