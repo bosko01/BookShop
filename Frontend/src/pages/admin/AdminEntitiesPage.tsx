@@ -21,6 +21,7 @@ import {
   updateAdminGenre,
   updateAdminPublisher,
   updateAdminUser,
+  updateAdminUserRole,
 } from '../../services/adminService';
 import { useAuth } from '../../state/auth/AuthContext';
 
@@ -35,6 +36,9 @@ const AdminEntitiesPage = () => {
   const [bindingName, setBindingName] = useState('');
   const [publisherName, setPublisherName] = useState('');
   const [publisherCountry, setPublisherCountry] = useState('');
+  const [publisherAddress, setPublisherAddress] = useState('');
+  const [publisherCity, setPublisherCity] = useState('');
+  const [publisherPhoneNumber, setPublisherPhoneNumber] = useState('');
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -186,26 +190,38 @@ const AdminEntitiesPage = () => {
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold text-slate-800">Publishers</h3>
           <form
-            className="flex gap-2"
+            className="grid gap-2 sm:grid-cols-5"
             onSubmit={async (event) => {
               event.preventDefault();
               if (!accessToken) return;
-              await createAdminPublisher(accessToken, { name: publisherName, country: publisherCountry });
+              await createAdminPublisher(accessToken, {
+                name: publisherName,
+                country: publisherCountry,
+                address: publisherAddress,
+                city: publisherCity,
+                phoneNumber: publisherPhoneNumber,
+              });
               reloadPage();
             }}
           >
             <input required value={publisherName} onChange={(event) => setPublisherName(event.target.value)} placeholder="Publisher name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm" />
             <input value={publisherCountry} onChange={(event) => setPublisherCountry(event.target.value)} placeholder="Country" className="rounded-xl border border-slate-200 px-3 py-2 text-sm" />
-            <button className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white">Create</button>
+            <input value={publisherAddress} onChange={(event) => setPublisherAddress(event.target.value)} placeholder="Address" className="rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input value={publisherCity} onChange={(event) => setPublisherCity(event.target.value)} placeholder="City" className="rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input value={publisherPhoneNumber} onChange={(event) => setPublisherPhoneNumber(event.target.value)} placeholder="Phone number" className="rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <button className="sm:col-span-5 rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white">Create</button>
           </form>
         </div>
         <DataTable
-          headers={['ID', 'Name', 'Country', 'Actions']}
+          headers={['ID', 'Name', 'Country', 'Address', 'City', 'Phone', 'Actions']}
           rows={publishers.map((publisher) => (
             <tr key={publisher.id} className="border-t border-slate-100">
               <td className="px-4 py-3">{publisher.id}</td>
               <td className="px-4 py-3">{publisher.name}</td>
               <td className="px-4 py-3">{publisher.country ?? '-'}</td>
+              <td className="px-4 py-3">{publisher.address ?? '-'}</td>
+              <td className="px-4 py-3">{publisher.city ?? '-'}</td>
+              <td className="px-4 py-3">{publisher.phoneNumber ?? '-'}</td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
                   <button
@@ -215,7 +231,16 @@ const AdminEntitiesPage = () => {
                       const nextName = window.prompt('Update publisher name', publisher.name);
                       if (!nextName) return;
                       const nextCountry = window.prompt('Update publisher country', publisher.country ?? '') ?? '';
-                      await updateAdminPublisher(accessToken, publisher.id, { name: nextName, country: nextCountry });
+                      const nextAddress = window.prompt('Update publisher address', publisher.address ?? '') ?? '';
+                      const nextCity = window.prompt('Update publisher city', publisher.city ?? '') ?? '';
+                      const nextPhoneNumber = window.prompt('Update publisher phone number', publisher.phoneNumber ?? '') ?? '';
+                      await updateAdminPublisher(accessToken, publisher.id, {
+                        name: nextName,
+                        country: nextCountry,
+                        address: nextAddress,
+                        city: nextCity,
+                        phoneNumber: nextPhoneNumber,
+                      });
                       reloadPage();
                     }}
                   >
@@ -281,11 +306,19 @@ const AdminEntitiesPage = () => {
                       if (!nextLastName) return;
                       const nextEmail = window.prompt('Email', user.email);
                       if (!nextEmail) return;
+                      const nextRole = window.prompt('Role (Customer/Admin)', user.role);
+                      if (!nextRole || !['Customer', 'Admin'].includes(nextRole)) return;
+
                       await updateAdminUser(accessToken, user.id, {
                         firstName: nextFirstName,
                         lastName: nextLastName,
                         email: nextEmail,
                       });
+
+                      if (nextRole !== user.role) {
+                        await updateAdminUserRole(accessToken, user.id, nextRole as 'Customer' | 'Admin');
+                      }
+
                       reloadPage();
                     }}
                   >
