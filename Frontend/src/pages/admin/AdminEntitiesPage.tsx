@@ -25,6 +25,8 @@ import {
   updateAdminUserRole,
 } from '../../services/adminService';
 import { useAuth } from '../../state/auth/AuthContext';
+import { PublisherFormModal } from '../../components/admin/PublisherFormModal';
+import { UserFormModal } from '../../components/admin/UserFormModal';
 
 const AdminEntitiesPage = () => {
   const { accessToken } = useAuth();
@@ -32,6 +34,8 @@ const AdminEntitiesPage = () => {
   const [bindings, setBindings] = useState<AdminBinding[]>([]);
   const [publishers, setPublishers] = useState<AdminPublisher[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [editingPublisher, setEditingPublisher] = useState<AdminPublisher | null>(null);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
   const [genreName, setGenreName] = useState('');
   const [bindingName, setBindingName] = useState('');
@@ -225,31 +229,7 @@ const AdminEntitiesPage = () => {
               <td className="px-4 py-3">{publisher.phoneNumber ?? '-'}</td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
-                  <button
-                    className="rounded-lg bg-slate-100 px-3 py-1 text-xs"
-                    onClick={async () => {
-                      if (!accessToken) return;
-                      const nextName = window.prompt('Update publisher name', publisher.name);
-                      if (nextName === null || nextName.trim().length === 0) return;
-                      const nextCountry = window.prompt('Update publisher country', publisher.country ?? '');
-                      if (nextCountry === null) return;
-                      const nextAddress = window.prompt('Update publisher address', publisher.address ?? '');
-                      if (nextAddress === null) return;
-                      const nextCity = window.prompt('Update publisher city', publisher.city ?? '');
-                      if (nextCity === null) return;
-                      const nextPhoneNumber = window.prompt('Update publisher phone number', publisher.phoneNumber ?? '');
-                      if (nextPhoneNumber === null) return;
-
-                      await updateAdminPublisher(accessToken, publisher.id, {
-                        name: nextName.trim(),
-                        country: nextCountry,
-                        address: nextAddress,
-                        city: nextCity,
-                        phoneNumber: nextPhoneNumber,
-                      });
-                      reloadPage();
-                    }}
-                  >
+                  <button className="rounded-lg bg-slate-100 px-3 py-1 text-xs" onClick={() => setEditingPublisher(publisher)}>
                     Edit
                   </button>
                   <button
@@ -302,38 +282,7 @@ const AdminEntitiesPage = () => {
               <td className="px-4 py-3">{user.role}</td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
-                  <button
-                    className="rounded-lg bg-slate-100 px-3 py-1 text-xs"
-                    onClick={async () => {
-                      if (!accessToken) return;
-                      const nextFirstName = window.prompt('First name', user.firstName);
-                      if (!nextFirstName) return;
-                      const nextLastName = window.prompt('Last name', user.lastName);
-                      if (!nextLastName) return;
-                      const nextEmail = window.prompt('Email', user.email);
-                      if (!nextEmail) return;
-                      const nextRole = window.prompt('Role (Customer/Admin)', user.role);
-                      if (!nextRole || !['Customer', 'Admin'].includes(nextRole)) return;
-                      const nextPassword = window.prompt('New password (leave empty to keep current)', '');
-                      if (nextPassword === null) return;
-
-                      await updateAdminUser(accessToken, user.id, {
-                        firstName: nextFirstName,
-                        lastName: nextLastName,
-                        email: nextEmail,
-                      });
-
-                      if (nextRole !== user.role) {
-                        await updateAdminUserRole(accessToken, user.id, nextRole as 'Customer' | 'Admin');
-                      }
-
-                      if (nextPassword.trim().length > 0) {
-                        await updateAdminUserPassword(accessToken, user.id, nextPassword);
-                      }
-
-                      reloadPage();
-                    }}
-                  >
+                  <button className="rounded-lg bg-slate-100 px-3 py-1 text-xs" onClick={() => setEditingUser(user)}>
                     Edit
                   </button>
                   <button
@@ -352,6 +301,42 @@ const AdminEntitiesPage = () => {
           ))}
         />
       </section>
+
+      <PublisherFormModal
+        open={Boolean(editingPublisher)}
+        initial={editingPublisher}
+        onClose={() => setEditingPublisher(null)}
+        onSubmit={async (values) => {
+          if (!accessToken || !editingPublisher) return;
+          await updateAdminPublisher(accessToken, editingPublisher.id, values);
+          reloadPage();
+        }}
+      />
+
+      <UserFormModal
+        open={Boolean(editingUser)}
+        initial={editingUser}
+        onClose={() => setEditingUser(null)}
+        onSubmit={async (values) => {
+          if (!accessToken || !editingUser) return;
+          await updateAdminUser(accessToken, editingUser.id, {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+          });
+
+          if (values.role !== editingUser.role) {
+            await updateAdminUserRole(accessToken, editingUser.id, values.role);
+          }
+
+          if (values.password.trim().length > 0) {
+            await updateAdminUserPassword(accessToken, editingUser.id, values.password);
+          }
+
+          reloadPage();
+        }}
+      />
+
     </div>
   );
 };
