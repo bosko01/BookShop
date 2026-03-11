@@ -82,10 +82,14 @@ const mapBookList = (book: ApiBookListResponse, ratings?: Map<number, BookRating
   };
 };
 
-const mapBookDetails = (book: ApiBookResponse, ratings?: Map<number, BookRating>): Book => ({
-  ...mapBookList(book, ratings),
-  author: `Author #${book.authorId}`,
-  category: `Genre #${book.genreId}` as Book['category'],
+const mapBookDetails = (
+  book: ApiBookResponse,
+  ratings?: Map<number, BookRating>,
+  author?: string,
+  category?: string,
+): Book => ({
+  ...mapBookList(book, ratings, author, category),
+  category: (category ?? `Genre #${book.genreId}`) as Book['category'],
   description: book.description ?? book.title,
   shortDescription: (book.description ?? book.title).slice(0, 100),
   year: book.pageCount,
@@ -125,13 +129,22 @@ export const getBookById = async (id: string): Promise<Book | undefined> => {
   const numericId = Number(id);
   if (Number.isNaN(numericId)) return undefined;
 
-  const [book, reviews] = await Promise.all([
+  const [book, reviews, genres] = await Promise.all([
     request<ApiBookResponse>(`/api/book/${numericId}`),
     request<ApiReview[]>(`/api/reviews/by-book/${numericId}`),
+    request<ApiGenreResponse[]>('/api/genres'),
   ]);
 
+  const author = await request<ApiAuthorResponse>(`/api/authors/${book.authorId}`);
   const ratings = getBookRatings(reviews);
-  return mapBookDetails(book, ratings);
+  const genreById = new Map(genres.map((genre) => [genre.id, genre.name]));
+
+  return mapBookDetails(
+    book,
+    ratings,
+    `${author.firstName} ${author.lastName}`,
+    genreById.get(book.genreId) ?? 'Fiction',
+  );
 };
 
 export const filterBooks = (books: Book[], filter: BookFilter): Book[] => {
