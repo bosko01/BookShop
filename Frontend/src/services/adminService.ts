@@ -265,6 +265,14 @@ export const updateAdminUserRole = async (token: string, id: number, role: Admin
   });
 };
 
+export const updateAdminUserPassword = async (token: string, id: number, password: string): Promise<void> => {
+  await request(`/api/users/${id}/password`, {
+    method: 'PATCH',
+    token,
+    body: { password },
+  });
+};
+
 export const deleteAdminUser = async (token: string, id: number): Promise<void> => {
   await request(`/api/users/${id}`, { method: 'DELETE', token });
 };

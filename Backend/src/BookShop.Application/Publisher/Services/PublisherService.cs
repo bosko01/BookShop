@@ -20,7 +20,7 @@ public sealed class PublisherService : IPublisherService
 
     public async Task<IReadOnlyList<PublisherListResponse>> GetAllAsync(CancellationToken cancellationToken = default)
         => (await _publisherRepository.GetAllAsync(cancellationToken))
-            .Select(x => new PublisherListResponse(x.Id, x.Name, x.Country))
+            .Select(x => new PublisherListResponse(x.Id, x.Name, x.Address, x.City, x.Country, x.PhoneNumber))
             .ToList();
 
     public async Task<PublisherResponse> GetByIdAsync(int id, CancellationToken cancellationToken = default)

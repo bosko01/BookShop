@@ -21,6 +21,7 @@ import {
   updateAdminGenre,
   updateAdminPublisher,
   updateAdminUser,
+  updateAdminUserPassword,
   updateAdminUserRole,
 } from '../../services/adminService';
 import { useAuth } from '../../state/auth/AuthContext';
@@ -229,13 +230,18 @@ const AdminEntitiesPage = () => {
                     onClick={async () => {
                       if (!accessToken) return;
                       const nextName = window.prompt('Update publisher name', publisher.name);
-                      if (!nextName) return;
-                      const nextCountry = window.prompt('Update publisher country', publisher.country ?? '') ?? '';
-                      const nextAddress = window.prompt('Update publisher address', publisher.address ?? '') ?? '';
-                      const nextCity = window.prompt('Update publisher city', publisher.city ?? '') ?? '';
-                      const nextPhoneNumber = window.prompt('Update publisher phone number', publisher.phoneNumber ?? '') ?? '';
+                      if (nextName === null || nextName.trim().length === 0) return;
+                      const nextCountry = window.prompt('Update publisher country', publisher.country ?? '');
+                      if (nextCountry === null) return;
+                      const nextAddress = window.prompt('Update publisher address', publisher.address ?? '');
+                      if (nextAddress === null) return;
+                      const nextCity = window.prompt('Update publisher city', publisher.city ?? '');
+                      if (nextCity === null) return;
+                      const nextPhoneNumber = window.prompt('Update publisher phone number', publisher.phoneNumber ?? '');
+                      if (nextPhoneNumber === null) return;
+
                       await updateAdminPublisher(accessToken, publisher.id, {
-                        name: nextName,
+                        name: nextName.trim(),
                         country: nextCountry,
                         address: nextAddress,
                         city: nextCity,
@@ -308,6 +314,8 @@ const AdminEntitiesPage = () => {
                       if (!nextEmail) return;
                       const nextRole = window.prompt('Role (Customer/Admin)', user.role);
                       if (!nextRole || !['Customer', 'Admin'].includes(nextRole)) return;
+                      const nextPassword = window.prompt('New password (leave empty to keep current)', '');
+                      if (nextPassword === null) return;
 
                       await updateAdminUser(accessToken, user.id, {
                         firstName: nextFirstName,
@@ -317,6 +325,10 @@ const AdminEntitiesPage = () => {
 
                       if (nextRole !== user.role) {
                         await updateAdminUserRole(accessToken, user.id, nextRole as 'Customer' | 'Admin');
+                      }
+
+                      if (nextPassword.trim().length > 0) {
+                        await updateAdminUserPassword(accessToken, user.id, nextPassword);
                       }
 
                       reloadPage();
